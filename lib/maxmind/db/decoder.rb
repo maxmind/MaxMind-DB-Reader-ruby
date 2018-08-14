@@ -18,7 +18,7 @@ module MaxMind # :nodoc:
       # The specification states the formula in the `Data Section Separator'
       # section.
       #
-      # +pointer_test+ is used for testing pointer codoe.
+      # +pointer_test+ is used for testing pointer code.
       def initialize(io, pointer_base=0, pointer_test=false)
         @io = io
         @pointer_base = pointer_base
