@@ -87,11 +87,12 @@ module MaxMind # :nodoc:
         options[:mode] = MODE_AUTO
       end
 
-      if options[:mode] == MODE_AUTO || options[:mode] == MODE_FILE
+      case options[:mode]
+      when MODE_AUTO, MODE_FILE
         @io = FileReader.new(database)
-      elsif options[:mode] == MODE_MEMORY
+      when MODE_MEMORY
         @io = MemoryReader.new(database)
-      elsif options[:mode] == MODE_PARAM_IS_BUFFER
+      when MODE_PARAM_IS_BUFFER
         @io = MemoryReader.new(database, is_buffer: true)
       else
         raise ArgumentError, 'Invalid mode'.freeze
