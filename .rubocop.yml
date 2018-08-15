@@ -8,3 +8,6 @@ Metrics/ClassLength:
 
 Metrics/MethodLength:
     Enabled: false
+
+Style/FormatStringToken:
+    Enabled: false
