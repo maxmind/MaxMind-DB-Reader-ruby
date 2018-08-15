@@ -217,9 +217,9 @@ module MaxMind # :nodoc:
         if index == 0
           buf = @io.read(base_offset, 4)
           n = buf.unpack('N'.freeze)[0]
-          last_24 = n >> 8
-          first_4 = (n & 0xf0) << 20
-          return first_4 | last_24
+          last24 = n >> 8
+          first4 = (n & 0xf0) << 20
+          return first4 | last24
         end
         buf = @io.read(base_offset + 3, 4)
         return buf.unpack('N'.freeze)[0] & 0x0fffffff
