@@ -118,15 +118,16 @@ module MaxMind # :nodoc:
       def decode_pointer(size, offset)
         pointer_size = size >> 3
 
-        if pointer_size == 0
+        case pointer_size
+        when 0
           new_offset = offset + 1
           buf = (size & 0x7).chr << @io.read(offset, 1)
           pointer = buf.unpack('n'.freeze)[0] + @pointer_base
-        elsif pointer_size == 1
+        when 1
           new_offset = offset + 2
           buf = "\x00".freeze.b << (size & 0x7).chr << @io.read(offset, 2)
           pointer = buf.unpack('N'.freeze)[0] + 2048 + @pointer_base
-        elsif pointer_size == 2
+        when 2
           new_offset = offset + 3
           buf = (size & 0x7).chr << @io.read(offset, 3)
           pointer = buf.unpack('N'.freeze)[0] + 526336 + @pointer_base
