@@ -11,3 +11,6 @@ Metrics/MethodLength:
 
 Style/FormatStringToken:
     Enabled: false
+
+Style/NumericPredicate:
+    Enabled: false
