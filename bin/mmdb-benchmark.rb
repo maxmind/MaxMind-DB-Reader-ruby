@@ -44,7 +44,7 @@ def benchmark(reader, file)
       reader.get(line)
 
       write_status(start, n) if n % 1000 == 0
-      return if n == count
+      break if n == count
     end
   end
 end
