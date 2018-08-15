@@ -229,7 +229,7 @@ class DecoderTest < Minitest::Test # :nodoc:
     offset = 0
     r = decoder.decode(offset)
 
-    if type == "float" || type == "double"
+    if ['float', 'double'].include?(type)
       assert_in_delta(expected, r[0], 0.001, name)
     else
       assert_equal(expected, r[0], name)
