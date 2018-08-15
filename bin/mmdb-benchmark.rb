@@ -28,7 +28,7 @@ end
 
 def print_usage
   STDERR.puts "Usage: #{$0} <MMDB file> [IP file]"
-  STDERR.puts ""
+  STDERR.puts
   STDERR.puts "Benchmark by reading IPs from the IP file and looking up each one in the MMDB file."
 end
 
