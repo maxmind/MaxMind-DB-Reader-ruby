@@ -223,7 +223,7 @@ class ReaderTest < Minitest::Test # :nodoc:
     )
     reader.close
     assert_equal(
-      {"en"=>"MaxMind DB Decoder Test database - contains every MaxMind DB data type"},
+      {"en" => "MaxMind DB Decoder Test database - contains every MaxMind DB data type"},
       reader.metadata.description,
     )
   end
