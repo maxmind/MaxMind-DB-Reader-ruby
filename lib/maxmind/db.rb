@@ -138,11 +138,7 @@ module MaxMind # :nodoc:
       # We could check the IP has the correct prefix (32 or 128) but I do not
       # for performance reasons.
 
-      if ip.ipv6?
-        ip_version = 6
-      else
-        ip_version = 4
-      end
+      ip_version = ip.ipv6? ? 6 : 4
       if ip_version == 6 and @ip_version == 4
         raise ArgumentError,
           "Error looking up #{ip}. You attempted to look up an IPv6 address in an IPv4-only database."
