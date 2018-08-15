@@ -138,7 +138,7 @@ module MaxMind # :nodoc:
 
         return pointer, new_offset if @pointer_test
 
-        value, _ = decode(pointer)
+        value, = decode(pointer)
         [value, new_offset]
       end
 

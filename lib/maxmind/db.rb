@@ -101,7 +101,7 @@ module MaxMind # :nodoc:
 
         metadata_start = find_metadata_start
         metadata_decoder = Decoder.new(@io, metadata_start)
-        metadata_map, _ = metadata_decoder.decode(metadata_start)
+        metadata_map, = metadata_decoder.decode(metadata_start)
         @metadata = Metadata.new(metadata_map)
         @decoder = Decoder.new(@io, @metadata.search_tree_size +
                                DATA_SECTION_SEPARATOR_SIZE)
@@ -239,7 +239,7 @@ module MaxMind # :nodoc:
               'The MaxMind DB file\'s search tree is corrupt'.freeze
       end
 
-      data, _ = @decoder.decode(offset_in_file)
+      data, = @decoder.decode(offset_in_file)
       data
     end
 
