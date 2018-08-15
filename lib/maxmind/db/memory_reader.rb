@@ -12,9 +12,7 @@ module MaxMind # :nodoc:
         @size = @buf.length
       end
 
-      def size
-        @size
-      end
+      attr_reader :size
 
       def close; end
 
