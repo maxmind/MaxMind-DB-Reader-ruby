@@ -249,9 +249,7 @@ class ReaderTest < Minitest::Test # :nodoc:
       end
     end
 
-    threads.each do |thread|
-      thread.join
-    end
+    threads.each(&:join)
 
     thread_lookups.each do |a|
       assert_equal(num_lookups * 2, a.length)
