@@ -83,9 +83,7 @@ module MaxMind # :nodoc:
     #           MODE_AUTO. Refer to the definition of those constants for an
     #           explanation of their meaning.
     def initialize(database, options = {})
-      if !options.has_key?(:mode)
-        options[:mode] = MODE_AUTO
-      end
+      options[:mode] = MODE_AUTO if !options.has_key?(:mode)
 
       case options[:mode]
       when MODE_AUTO, MODE_FILE
@@ -151,9 +149,7 @@ module MaxMind # :nodoc:
       end
 
       pointer = find_address_in_tree(ip, ip_version)
-      if pointer == 0
-        return nil
-      end
+      return nil if pointer == 0
 
       return resolve_data_pointer(pointer)
     end
@@ -174,39 +170,27 @@ module MaxMind # :nodoc:
 
       node_count = @node_count
       bit_count.times do |i|
-        if node >= node_count
-          break
-        end
+        break if node >= node_count
         c = packed[i >> 3].ord
         bit = 1 & (c >> 7 - (i % 8))
         node = read_node(node, bit)
       end
 
-      if node == node_count
-        return 0
-      end
+      return 0 if node == node_count
 
-      if node > node_count
-        return node
-      end
+      return node if node > node_count
 
       raise InvalidDatabaseError, 'Invalid node in search tree'.freeze
     end
 
     def start_node(length)
-      if @ip_version != 6 || length == 128
-        return 0
-      end
+      return 0 if @ip_version != 6 || length == 128
 
-      if @ipv4_start
-        return @ipv4_start
-      end
+      return @ipv4_start if @ipv4_start
 
       node = 0
       96.times do
-        if node >= @metadata.node_count
-          break
-        end
+        break if node >= @metadata.node_count
         node = read_node(node, 0)
       end
 
@@ -279,9 +263,7 @@ module MaxMind # :nodoc:
       stop_index = @size - metadata_max_size
       index = @size - METADATA_START_MARKER_LENGTH
       while index >= stop_index
-        if is_at_metadata(index)
-          return index + METADATA_START_MARKER_LENGTH
-        end
+        return index + METADATA_START_MARKER_LENGTH if is_at_metadata(index)
         index -= 1
       end
 

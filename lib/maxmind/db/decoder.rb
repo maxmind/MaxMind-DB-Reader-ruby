@@ -80,21 +80,15 @@ module MaxMind # :nodoc:
       end
 
       def decode_int(type_code, type_size, size, offset)
-        if size == 0
-          return 0, offset
-        end
+        return 0, offset if size == 0
 
         buf = @io.read(offset, size)
-        if size != type_size
-          buf = buf.rjust(type_size, "\x00".freeze)
-        end
+        buf = buf.rjust(type_size, "\x00".freeze) if size != type_size
         return buf.unpack(type_code)[0], offset + size
       end
 
       def decode_uint128(size, offset)
-        if size == 0
-          return 0, offset
-        end
+        return 0, offset if size == 0
 
         buf = @io.read(offset, size)
 
@@ -142,9 +136,7 @@ module MaxMind # :nodoc:
           pointer = buf.unpack('N'.freeze)[0] + @pointer_base
         end
 
-        if @pointer_test
-          return pointer, new_offset
-        end
+        return pointer, new_offset if @pointer_test
 
         value, _ = decode(pointer)
         return value, new_offset
@@ -191,9 +183,7 @@ module MaxMind # :nodoc:
         buf = @io.read(offset, 1)
         ctrl_byte = buf.ord
         type_num = ctrl_byte >> 5
-        if type_num == 0
-          type_num, new_offset = read_extended(new_offset)
-        end
+        type_num, new_offset = read_extended(new_offset) if type_num == 0
 
         size, new_offset = size_from_ctrl_byte(ctrl_byte, new_offset, type_num)
         # We could check an element exists at `type_num', but for performance I
@@ -217,13 +207,9 @@ module MaxMind # :nodoc:
       def size_from_ctrl_byte(ctrl_byte, offset, type_num)
         size = ctrl_byte & 0x1f
 
-        if type_num == 1
-          return size, offset
-        end
+        return size, offset if type_num == 1
 
-        if size < 29
-          return size, offset
-        end
+        return size, offset if size < 29
 
         if size == 29
           size_bytes = @io.read(offset, 1)

@@ -18,9 +18,7 @@ module MaxMind # :nodoc:
       end
 
       def read(offset, size)
-        if size == 0
-          return "".freeze.b
-        end
+        return "".freeze.b if size == 0
 
         # When we support only Ruby 2.5+, remove this and require pread.
         if @fh.respond_to?(:pread)
@@ -32,9 +30,7 @@ module MaxMind # :nodoc:
           end
         end
 
-        if buf.nil? || buf.length != size
-          raise InvalidDatabaseError, 'The MaxMind DB file contains bad data'.freeze
-        end
+        raise InvalidDatabaseError, 'The MaxMind DB file contains bad data'.freeze if buf.nil? || buf.length != size
 
         return buf
       end

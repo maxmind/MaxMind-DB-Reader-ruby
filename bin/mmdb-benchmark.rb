@@ -4,9 +4,7 @@ require 'maxmind/db'
 
 def main
   args = get_args
-  if args.nil?
-    return false
-  end
+  return false if args.nil?
 
   reader = MaxMind::DB.new(args[:database], mode: MaxMind::DB::MODE_MEMORY)
   benchmark(reader, args[:ip_file])
@@ -45,12 +43,8 @@ def benchmark(reader, file)
 
       reader.get(line)
 
-      if n % 1000 == 0
-        write_status(start, n)
-      end
-      if n == count
-        return
-      end
+      write_status(start, n) if n % 1000 == 0
+      return if n == count
     end
   end
 end
@@ -62,8 +56,6 @@ def write_status(start, n)
   puts '%d @ %.2f lookups per second (%d seconds elapsed)' % [n, rate, elapsed]
 end
 
-if main
-  exit 0
-end
+exit 0 if main
 
 exit 1
