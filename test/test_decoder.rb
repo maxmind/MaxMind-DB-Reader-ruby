@@ -218,7 +218,7 @@ class DecoderTest < Minitest::Test # :nodoc:
     values
   end
 
-  def check_decoding(type, input, expected, name=nil)
+  def check_decoding(type, input, expected, name = nil)
     name ||= expected
 
     io = MaxMind::DB::MemoryReader.new(input, is_buffer: true)
