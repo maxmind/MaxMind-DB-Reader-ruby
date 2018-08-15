@@ -53,7 +53,7 @@ def write_status(start, count)
   now = Time.now.to_f
   elapsed = now - start
   rate = 1.0 * count / elapsed
-  puts '%d @ %.2f lookups per second (%d seconds elapsed)' % [count, rate, elapsed]
+  puts format('%d @ %.2f lookups per second (%d seconds elapsed)', count, rate, elapsed)
 end
 
 exit 0 if main
