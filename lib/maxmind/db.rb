@@ -139,7 +139,7 @@ module MaxMind # :nodoc:
       # for performance reasons.
 
       ip_version = ip.ipv6? ? 6 : 4
-      if ip_version == 6 and @ip_version == 4
+      if ip_version == 6 && @ip_version == 4
         raise ArgumentError,
           "Error looking up #{ip}. You attempted to look up an IPv6 address in an IPv4-only database."
       end
