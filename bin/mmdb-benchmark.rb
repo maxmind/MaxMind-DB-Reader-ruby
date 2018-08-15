@@ -49,11 +49,11 @@ def benchmark(reader, file)
   end
 end
 
-def write_status(start, n)
+def write_status(start, count)
   now = Time.now.to_f
   elapsed = now - start
-  rate = 1.0 * n / elapsed
-  puts '%d @ %.2f lookups per second (%d seconds elapsed)' % [n, rate, elapsed]
+  rate = 1.0 * count / elapsed
+  puts '%d @ %.2f lookups per second (%d seconds elapsed)' % [count, rate, elapsed]
 end
 
 exit 0 if main
