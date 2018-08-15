@@ -32,8 +32,8 @@ module MaxMind # :nodoc:
   #
   # == Exceptions
   #
-  # DB throws an InvalidDatabaseError if the database is corrupt or invalid. It
-  # can throw other exceptions, such as ArgumentError, if other errors occur.
+  # DB raises an InvalidDatabaseError if the database is corrupt or invalid. It
+  # can raise other exceptions, such as ArgumentError, if other errors occur.
   class DB
     # Choose the default method to open the database. Currently the default is
     # MODE_FILE.
@@ -68,7 +68,7 @@ module MaxMind # :nodoc:
     # is safe to use after forking only if you use MODE_MEMORY or if your
     # version of Ruby supports IO#pread.
     #
-    # Creating the DB may throw an exception if initialization fails.
+    # Creating the DB may raise an exception if initialization fails.
     #
     # +database+ is a path to a {MaxMind
     # DB}[http://maxmind.github.io/MaxMind-DB/].
@@ -129,7 +129,7 @@ module MaxMind # :nodoc:
     #
     # If no record is found for +ip_address+, +get+ returns +nil+.
     #
-    # +get+ throws an exception if there is an error performing the lookup.
+    # +get+ raises an exception if there is an error performing the lookup.
     #
     # +ip_address+ is a string in the standard notation. It may be IPv4 or
     # IPv6.
@@ -279,7 +279,7 @@ module MaxMind # :nodoc:
 
     # Close the DB and return resources to the system.
     #
-    # There is no useful return value. #close throws an exception if there is
+    # There is no useful return value. #close raises an exception if there is
     # an error.
     def close
       @io.close
