@@ -7,10 +7,6 @@
 # versions of RuboCop, may require this file to be generated again.
 
 # Offense count: 1
-Metrics/PerceivedComplexity:
-  Max: 9
-
-# Offense count: 1
 Naming/AccessorMethodName:
   Exclude:
     - 'bin/mmdb-benchmark.rb'
