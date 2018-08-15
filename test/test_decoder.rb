@@ -186,11 +186,7 @@ class DecoderTest < Minitest::Test # :nodoc:
   end
 
   def generate_large_uint(bits)
-    if bits == 64
-      ctrl_byte = "\x02".b
-    else
-      ctrl_byte = "\x03".b
-    end
+    ctrl_byte = bits == 64 ? "\x02".b : "\x03".b
     uints = {
       "\x00".b + ctrl_byte => 0,
       "\x02".b + ctrl_byte + "\x01\xf4".b => 500,
