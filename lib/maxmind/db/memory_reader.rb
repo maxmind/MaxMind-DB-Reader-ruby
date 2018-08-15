@@ -16,8 +16,7 @@ module MaxMind # :nodoc:
         @size
       end
 
-      def close
-      end
+      def close; end
 
       def read(offset, size)
         @buf[offset, size]
