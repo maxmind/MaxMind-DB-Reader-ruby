@@ -249,11 +249,7 @@ module MaxMind # :nodoc:
     end
 
     def find_metadata_start
-      if @size < METADATA_MAX_SIZE
-        metadata_max_size = @size
-      else
-        metadata_max_size = METADATA_MAX_SIZE
-      end
+      metadata_max_size = @size < METADATA_MAX_SIZE ? @size : METADATA_MAX_SIZE
 
       stop_index = @size - metadata_max_size
       index = @size - METADATA_START_MARKER_LENGTH
