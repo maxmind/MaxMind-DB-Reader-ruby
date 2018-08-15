@@ -56,7 +56,7 @@ class ReaderTest < Minitest::Test # :nodoc:
 
   def test_no_ipv4_search_tree
     reader = MaxMind::DB.new(
-        'test/data/test-data/MaxMind-DB-no-ipv4-search-tree.mmdb')
+      'test/data/test-data/MaxMind-DB-no-ipv4-search-tree.mmdb')
     assert_equal('::0/64', reader.get('1.1.1.1'))
     assert_equal('::0/64', reader.get('192.1.1.1'))
     reader.close
