@@ -223,7 +223,7 @@ class ReaderTest < Minitest::Test # :nodoc:
     )
     reader.close
     assert_equal(
-      {"en" => "MaxMind DB Decoder Test database - contains every MaxMind DB data type"},
+      { "en" => "MaxMind DB Decoder Test database - contains every MaxMind DB data type" },
       reader.metadata.description,
     )
   end
@@ -364,7 +364,7 @@ class ReaderTest < Minitest::Test # :nodoc:
       '1.1.1.31' => '1.1.1.16',
     }
     pairs.each do |key_address, value_address|
-      data = {'ip' => value_address}
+      data = { 'ip' => value_address }
       assert_equal(
         data,
         reader.get(key_address),
@@ -386,7 +386,7 @@ class ReaderTest < Minitest::Test # :nodoc:
     ]
     subnets.each do |address|
       assert_equal(
-        {'ip' => address },
+        { 'ip' => address },
         reader.get(address),
         "found expected data record for #{address} in #{filename}",
       )
