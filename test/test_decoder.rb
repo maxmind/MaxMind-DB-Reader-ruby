@@ -127,6 +127,7 @@ class DecoderTest < Minitest::Test # :nodoc:
     validate_type_decoding('pointers', pointers)
   end
 
+  # rubocop:disable Style/ClassVars
   @@strings = {
     "\x40".b => '',
     "\x41\x31".b => '1',
@@ -151,6 +152,7 @@ class DecoderTest < Minitest::Test # :nodoc:
     "\x5e\x06\xb3".b + "\x78".b * 2000 => 'x' * 2000,
     "\x5f\x00\x10\x53".b + "\x78".b * 70000 => 'x' * 70000,
   }
+  # rubocop:enable Style/ClassVars
 
   def test_string
     values = validate_type_decoding('string', @@strings)
