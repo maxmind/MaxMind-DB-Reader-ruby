@@ -83,7 +83,7 @@ module MaxMind # :nodoc:
     #           MODE_AUTO. Refer to the definition of those constants for an
     #           explanation of their meaning.
     def initialize(database, options = {})
-      options[:mode] = MODE_AUTO unless options.has_key?(:mode)
+      options[:mode] = MODE_AUTO unless options.key?(:mode)
 
       case options[:mode]
       when MODE_AUTO, MODE_FILE
