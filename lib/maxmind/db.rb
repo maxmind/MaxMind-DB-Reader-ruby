@@ -191,7 +191,6 @@ module MaxMind # :nodoc:
       end
 
       @ipv4_start = node
-      return node
     end
 
     # Read a record from the indicated node. Index indicates whether it's the
