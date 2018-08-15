@@ -14,7 +14,7 @@ class ReaderTest < Minitest::Test # :nodoc:
       [24, 28, 32].each do |record_size|
         [4, 6].each do |ip_version|
           filename = 'test/data/test-data/MaxMind-DB-test-ipv' +
-            ip_version.to_s + '-' + record_size.to_s + '.mmdb'
+                     ip_version.to_s + '-' + record_size.to_s + '.mmdb'
           reader = MaxMind::DB.new(filename, mode: mode)
           check_metadata(reader, ip_version, record_size)
           if ip_version == 4
