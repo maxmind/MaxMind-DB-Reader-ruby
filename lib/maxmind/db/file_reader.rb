@@ -18,7 +18,7 @@ module MaxMind # :nodoc:
       end
 
       def read(offset, size)
-        return "".freeze.b if size == 0
+        return ''.freeze.b if size == 0
 
         # When we support only Ruby 2.5+, remove this and require pread.
         if @fh.respond_to?(:pread)
