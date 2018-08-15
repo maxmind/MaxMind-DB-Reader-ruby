@@ -2,7 +2,6 @@ require 'maxmind/db'
 require 'minitest/autorun'
 require 'mmdb_util'
 
-# rubocop:disable Metrics/ClassLength
 class ReaderTest < Minitest::Test # :nodoc:
   def test_reader
     modes = [
@@ -418,4 +417,3 @@ class ReaderTest < Minitest::Test # :nodoc:
     end
   end
 end
-# rubocop:enable Metrics/ClassLength
