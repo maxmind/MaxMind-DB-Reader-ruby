@@ -2,6 +2,7 @@ require 'maxmind/db'
 require 'minitest/autorun'
 require 'mmdb_util'
 
+# rubocop:disable Metrics/ClassLength
 class ReaderTest < Minitest::Test # :nodoc:
   def test_reader
     modes = [
@@ -29,7 +30,8 @@ class ReaderTest < Minitest::Test # :nodoc:
 
   def test_decoder
     reader = MaxMind::DB.new(
-      'test/data/test-data/MaxMind-DB-test-decoder.mmdb')
+      'test/data/test-data/MaxMind-DB-test-decoder.mmdb'
+    )
     record = reader.get('::1.1.1.0')
     assert_equal([1, 2, 3], record['array'])
     assert_equal(true, record['boolean'])
@@ -56,7 +58,8 @@ class ReaderTest < Minitest::Test # :nodoc:
 
   def test_no_ipv4_search_tree
     reader = MaxMind::DB.new(
-      'test/data/test-data/MaxMind-DB-no-ipv4-search-tree.mmdb')
+      'test/data/test-data/MaxMind-DB-no-ipv4-search-tree.mmdb'
+    )
     assert_equal('::0/64', reader.get('1.1.1.1'))
     assert_equal('::0/64', reader.get('192.1.1.1'))
     reader.close
@@ -64,7 +67,8 @@ class ReaderTest < Minitest::Test # :nodoc:
 
   def test_ipv6_address_in_ipv4_database
     reader = MaxMind::DB.new(
-      'test/data/test-data/MaxMind-DB-test-ipv4-24.mmdb')
+      'test/data/test-data/MaxMind-DB-test-ipv4-24.mmdb'
+    )
     e = assert_raises ArgumentError do
       reader.get('2001::')
     end
@@ -89,7 +93,8 @@ class ReaderTest < Minitest::Test # :nodoc:
 
   def test_broken_database
     reader = MaxMind::DB.new(
-      'test/data/test-data/GeoIP2-City-Test-Broken-Double-Format.mmdb')
+      'test/data/test-data/GeoIP2-City-Test-Broken-Double-Format.mmdb'
+    )
     e = assert_raises MaxMind::DB::InvalidDatabaseError do
       reader.get('2001:220::')
     end
@@ -102,7 +107,8 @@ class ReaderTest < Minitest::Test # :nodoc:
 
   def test_ip_validation
     reader = MaxMind::DB.new(
-      'test/data/test-data/MaxMind-DB-test-decoder.mmdb')
+      'test/data/test-data/MaxMind-DB-test-decoder.mmdb'
+    )
     e = assert_raises ArgumentError do
       reader.get('not_ip')
     end
@@ -143,7 +149,8 @@ class ReaderTest < Minitest::Test # :nodoc:
 
   def test_too_many_get_args
     reader = MaxMind::DB.new(
-      'test/data/test-data/MaxMind-DB-test-decoder.mmdb')
+      'test/data/test-data/MaxMind-DB-test-decoder.mmdb'
+    )
     e = assert_raises ArgumentError do
       reader.get('1.1.1.1', 'blah')
     end
@@ -153,7 +160,8 @@ class ReaderTest < Minitest::Test # :nodoc:
 
   def test_no_get_args
     reader = MaxMind::DB.new(
-      'test/data/test-data/MaxMind-DB-test-decoder.mmdb')
+      'test/data/test-data/MaxMind-DB-test-decoder.mmdb'
+    )
     e = assert_raises ArgumentError do
       reader.get
     end
@@ -163,7 +171,8 @@ class ReaderTest < Minitest::Test # :nodoc:
 
   def test_metadata_args
     reader = MaxMind::DB.new(
-      'test/data/test-data/MaxMind-DB-test-decoder.mmdb')
+      'test/data/test-data/MaxMind-DB-test-decoder.mmdb'
+    )
     e = assert_raises ArgumentError do
       reader.metadata('hi')
     end
@@ -173,7 +182,8 @@ class ReaderTest < Minitest::Test # :nodoc:
 
   def test_metadata_unknown_attribute
     reader = MaxMind::DB.new(
-      'test/data/test-data/MaxMind-DB-test-decoder.mmdb')
+      'test/data/test-data/MaxMind-DB-test-decoder.mmdb'
+    )
     e = assert_raises NoMethodError do
       reader.metadata.what
     end
@@ -183,20 +193,23 @@ class ReaderTest < Minitest::Test # :nodoc:
 
   def test_close
     reader = MaxMind::DB.new(
-      'test/data/test-data/MaxMind-DB-test-decoder.mmdb')
+      'test/data/test-data/MaxMind-DB-test-decoder.mmdb'
+    )
     reader.close
   end
 
   def test_double_close
     reader = MaxMind::DB.new(
-      'test/data/test-data/MaxMind-DB-test-decoder.mmdb')
+      'test/data/test-data/MaxMind-DB-test-decoder.mmdb'
+    )
     reader.close
     reader.close
   end
 
   def test_closed_get
     reader = MaxMind::DB.new(
-      'test/data/test-data/MaxMind-DB-test-decoder.mmdb')
+      'test/data/test-data/MaxMind-DB-test-decoder.mmdb'
+    )
     reader.close
     e = assert_raises IOError do
       reader.get('1.1.1.1')
@@ -206,7 +219,8 @@ class ReaderTest < Minitest::Test # :nodoc:
 
   def test_closed_metadata
     reader = MaxMind::DB.new(
-      'test/data/test-data/MaxMind-DB-test-decoder.mmdb')
+      'test/data/test-data/MaxMind-DB-test-decoder.mmdb'
+    )
     reader.close
     assert_equal(
       {"en"=>"MaxMind DB Decoder Test database - contains every MaxMind DB data type"},
@@ -216,7 +230,8 @@ class ReaderTest < Minitest::Test # :nodoc:
 
   def test_threads
     reader = MaxMind::DB.new(
-      'test/data/test-data/GeoIP2-Domain-Test.mmdb')
+      'test/data/test-data/GeoIP2-Domain-Test.mmdb'
+    )
 
     num_threads = 16
     num_lookups = 32
@@ -252,6 +267,8 @@ class ReaderTest < Minitest::Test # :nodoc:
   # In these tests I am trying to exercise Reader#read_node directly. It is not
   # too easy to test its behaviour with real databases, so construct dummy ones
   # directly.
+  #
+  # rubocop:disable Metrics/MethodLength
   def test_read_node
     tests = [
       {
@@ -293,7 +310,8 @@ class ReaderTest < Minitest::Test # :nodoc:
       buf += MMDBUtil.make_metadata_map(test[:record_size])
 
       reader = MaxMind::DB.new(
-        buf, mode: MaxMind::DB::MODE_PARAM_IS_BUFFER)
+        buf, mode: MaxMind::DB::MODE_PARAM_IS_BUFFER
+      )
 
       assert_equal(reader.metadata.record_size, test[:record_size])
 
@@ -303,6 +321,7 @@ class ReaderTest < Minitest::Test # :nodoc:
       assert_equal(test[:right], test[:check_right])
     end
   end
+  # rubocop:enable Metrics/MethodLength
 
   def check_metadata(reader, ip_version, record_size)
     metadata = reader.metadata
@@ -399,3 +418,4 @@ class ReaderTest < Minitest::Test # :nodoc:
     end
   end
 end
+# rubocop:enable Metrics/ClassLength
