@@ -222,7 +222,7 @@ class ReaderTest < Minitest::Test # :nodoc:
     )
     reader.close
     assert_equal(
-      { "en" => "MaxMind DB Decoder Test database - contains every MaxMind DB data type" },
+      { 'en' => 'MaxMind DB Decoder Test database - contains every MaxMind DB data type' },
       reader.metadata.description,
     )
   end
@@ -299,7 +299,7 @@ class ReaderTest < Minitest::Test # :nodoc:
     ]
 
     tests.each do |test|
-      buf = "".b
+      buf = ''.b
       buf += test[:node_bytes]
 
       buf += "\x00".b * 16
