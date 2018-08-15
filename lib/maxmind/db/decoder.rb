@@ -33,27 +33,27 @@ module MaxMind # :nodoc:
           value, offset = decode(offset)
           array << value
         end
-        return array, offset
+        [array, offset]
       end
 
       def decode_boolean(size, offset)
-        return size != 0, offset
+        [size != 0, offset]
       end
 
       def decode_bytes(size, offset)
-        return @io.read(offset, size), offset + size
+        [@io.read(offset, size), offset + size]
       end
 
       def decode_double(size, offset)
         verify_size(8, size)
         buf = @io.read(offset, 8)
-        return buf.unpack('G'.freeze)[0], offset + 8
+        [buf.unpack('G'.freeze)[0], offset + 8]
       end
 
       def decode_float(size, offset)
         verify_size(4, size)
         buf = @io.read(offset, 4)
-        return buf.unpack('g'.freeze)[0], offset + 4
+        [buf.unpack('g'.freeze)[0], offset + 4]
       end
 
       def verify_size(expected, actual)
@@ -84,7 +84,7 @@ module MaxMind # :nodoc:
 
         buf = @io.read(offset, size)
         buf = buf.rjust(type_size, "\x00".freeze) if size != type_size
-        return buf.unpack(type_code)[0], offset + size
+        [buf.unpack(type_code)[0], offset + size]
       end
 
       def decode_uint128(size, offset)
@@ -102,7 +102,7 @@ module MaxMind # :nodoc:
         a = a_bytes.unpack('Q>'.freeze)[0]
         b = b_bytes.unpack('Q>'.freeze)[0]
         a <<= 64
-        return a | b, offset + size
+        [a | b, offset + size]
       end
 
       def decode_map(size, offset)
@@ -112,7 +112,7 @@ module MaxMind # :nodoc:
           value, offset = decode(offset)
           container[key] = value
         end
-        return container, offset
+        [container, offset]
       end
 
       def decode_pointer(size, offset)
@@ -139,7 +139,7 @@ module MaxMind # :nodoc:
         return pointer, new_offset if @pointer_test
 
         value, _ = decode(pointer)
-        return value, new_offset
+        [value, new_offset]
       end
 
       def decode_utf8_string(size, offset)
@@ -148,7 +148,7 @@ module MaxMind # :nodoc:
         buf.force_encoding(Encoding::UTF_8)
         # We could check it's valid UTF-8 with `valid_encoding?', but for
         # performance I do not.
-        return buf, new_offset
+        [buf, new_offset]
       end
 
       TYPE_DECODER = {
@@ -188,7 +188,7 @@ module MaxMind # :nodoc:
         size, new_offset = size_from_ctrl_byte(ctrl_byte, new_offset, type_num)
         # We could check an element exists at `type_num', but for performance I
         # don't.
-        return send(TYPE_DECODER[type_num], size, new_offset)
+        send(TYPE_DECODER[type_num], size, new_offset)
       end
 
       private
@@ -201,7 +201,7 @@ module MaxMind # :nodoc:
           raise InvalidDatabaseError,
             "Something went horribly wrong in the decoder. An extended type resolved to a type number < 8 (#{type_num})"
         end
-        return type_num, offset + 1
+        [type_num, offset + 1]
       end
 
       def size_from_ctrl_byte(ctrl_byte, offset, type_num)
@@ -225,7 +225,7 @@ module MaxMind # :nodoc:
 
         size_bytes = "\x00".freeze.b << @io.read(offset, 3)
         size = 65821 + size_bytes.unpack('N'.freeze)[0]
-        return size, offset + 3
+        [size, offset + 3]
       end
     end
   end

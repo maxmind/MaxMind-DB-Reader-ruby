@@ -147,7 +147,7 @@ module MaxMind # :nodoc:
       pointer = find_address_in_tree(ip, ip_version)
       return nil if pointer == 0
 
-      return resolve_data_pointer(pointer)
+      resolve_data_pointer(pointer)
     end
 
     private
@@ -245,7 +245,7 @@ module MaxMind # :nodoc:
       end
 
       data, _ = @decoder.decode(offset_in_file)
-      return data
+      data
     end
 
     def find_metadata_start

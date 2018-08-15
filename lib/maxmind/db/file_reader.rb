@@ -32,7 +32,7 @@ module MaxMind # :nodoc:
 
         raise InvalidDatabaseError, 'The MaxMind DB file contains bad data'.freeze if buf.nil? || buf.length != size
 
-        return buf
+        buf
       end
     end
   end

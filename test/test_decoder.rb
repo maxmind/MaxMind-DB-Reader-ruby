@@ -199,7 +199,7 @@ class DecoderTest < Minitest::Test # :nodoc:
       input = [power].pack('C') + ctrl_byte + "\xff".b * power
       uints[input] = expected
     end
-    return uints
+    uints
   end
 
   def test_uint64
@@ -215,7 +215,7 @@ class DecoderTest < Minitest::Test # :nodoc:
     tests.each do |input, expected|
       values << check_decoding(type, input, expected)
     end
-    return values
+    values
   end
 
   def check_decoding(type, input, expected, name=nil)
@@ -238,6 +238,6 @@ class DecoderTest < Minitest::Test # :nodoc:
     end
 
     io.close
-    return r[0]
+    r[0]
   end
 end

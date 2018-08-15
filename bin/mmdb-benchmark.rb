@@ -8,7 +8,7 @@ def main
 
   reader = MaxMind::DB.new(args[:database], mode: MaxMind::DB::MODE_MEMORY)
   benchmark(reader, args[:ip_file])
-  return true
+  true
 end
 
 def get_args
@@ -20,7 +20,7 @@ def get_args
   database = ARGV[0]
   ip_file  = ARGV[1]
 
-  return {
+  {
     database: database,
     ip_file:  ip_file,
   }
