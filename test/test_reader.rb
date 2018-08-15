@@ -37,7 +37,7 @@ class ReaderTest < Minitest::Test # :nodoc:
     assert_equal("\x00\x00\x00*".b, record['bytes'])
     assert_equal(42.123456, record['double'])
     assert_in_delta(1.1, record['float'])
-    assert_equal(-268435456, record['int32'])
+    assert_equal(-268_435_456, record['int32'])
     assert_equal(
       {
         'mapX' => {
@@ -48,10 +48,10 @@ class ReaderTest < Minitest::Test # :nodoc:
       record['map'],
     )
     assert_equal(100, record['uint16'])
-    assert_equal(268435456, record['uint32'])
-    assert_equal(1152921504606846976, record['uint64'])
+    assert_equal(268_435_456, record['uint32'])
+    assert_equal(1_152_921_504_606_846_976, record['uint64'])
     assert_equal('unicode! ☯ - ♫', record['utf8_string'])
-    assert_equal(1329227995784915872903807060280344576, record['uint128'])
+    assert_equal(1_329_227_995_784_915_872_903_807_060_280_344_576, record['uint128'])
     reader.close
   end
 
@@ -273,8 +273,8 @@ class ReaderTest < Minitest::Test # :nodoc:
         record_size: 24,
         # Left record + right record
         node_bytes:  "\xab\xcd\xef".b + "\xbc\xfe\xfa".b,
-        left:        11259375,
-        right:       12386042,
+        left:        11_259_375,
+        right:       12_386_042,
         check_left:  "\x00\xab\xcd\xef".b.unpack('N')[0],
         check_right: "\x00\xbc\xfe\xfa".b.unpack('N')[0],
       },
@@ -282,8 +282,8 @@ class ReaderTest < Minitest::Test # :nodoc:
         record_size: 28,
         # Left record (part) + middle byte + right record (part)
         node_bytes:  "\xab\xcd\xef".b + "\x12".b + "\xfd\xdc\xfa".b,
-        left:        28036591,
-        right:       50191610,
+        left:        28_036_591,
+        right:       50_191_610,
         check_left:  "\x01\xab\xcd\xef".b.unpack('N')[0],
         check_right: "\x02\xfd\xdc\xfa".b.unpack('N')[0],
       },
@@ -291,8 +291,8 @@ class ReaderTest < Minitest::Test # :nodoc:
         record_size: 32,
         # Left record + right record
         node_bytes:  "\xab\xcd\xef\x12".b + "\xfd\xdc\xfa\x15".b,
-        left:        2882400018,
-        right:       4259117589,
+        left:        2_882_400_018,
+        right:       4_259_117_589,
         check_left:  "\xab\xcd\xef\x12".b.unpack('N')[0],
         check_right: "\xfd\xdc\xfa\x15".b.unpack('N')[0],
       },
@@ -325,7 +325,7 @@ class ReaderTest < Minitest::Test # :nodoc:
 
     assert_equal(2, metadata.binary_format_major_version, 'major_version')
     assert_equal(0, metadata.binary_format_minor_version, 'minor_version')
-    assert_operator(metadata.build_epoch, :>, 1373571901, 'build_epoch')
+    assert_operator(metadata.build_epoch, :>, 1_373_571_901, 'build_epoch')
     assert_equal('Test', metadata.database_type, 'database_type')
     assert_equal(
       {

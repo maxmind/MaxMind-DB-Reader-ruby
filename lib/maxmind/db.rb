@@ -53,7 +53,7 @@ module MaxMind # :nodoc:
     private_constant :METADATA_START_MARKER
     METADATA_START_MARKER_LENGTH = 14
     private_constant :METADATA_START_MARKER_LENGTH
-    METADATA_MAX_SIZE = 131072
+    METADATA_MAX_SIZE = 131_072
     private_constant :METADATA_MAX_SIZE
 
     # Return the metadata associated with the {MaxMind

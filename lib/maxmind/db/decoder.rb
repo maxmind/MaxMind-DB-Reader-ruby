@@ -129,7 +129,7 @@ module MaxMind # :nodoc:
         when 2
           new_offset = offset + 3
           buf = (size & 0x7).chr << @io.read(offset, 3)
-          pointer = buf.unpack('N'.freeze)[0] + 526336 + @pointer_base
+          pointer = buf.unpack('N'.freeze)[0] + 526_336 + @pointer_base
         else
           new_offset = offset + 4
           buf = @io.read(offset, 4)
@@ -226,7 +226,7 @@ module MaxMind # :nodoc:
         end
 
         size_bytes = "\x00".freeze.b << @io.read(offset, 3)
-        size = 65821 + size_bytes.unpack('N'.freeze)[0]
+        size = 65_821 + size_bytes.unpack('N'.freeze)[0]
         [size, offset + 3]
       end
     end
