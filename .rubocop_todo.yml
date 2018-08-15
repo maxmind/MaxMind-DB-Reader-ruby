@@ -8,14 +8,6 @@
 
 # Offense count: 1
 # Cop supports --auto-correct.
-# Configuration parameters: EnforcedStyle.
-# SupportedStyles: implicit, explicit
-Style/RescueStandardError:
-  Exclude:
-    - 'lib/maxmind/db.rb'
-
-# Offense count: 1
-# Cop supports --auto-correct.
 # Configuration parameters: .
 # SupportedStyles: use_perl_names, use_english_names
 Style/SpecialGlobalVars:
