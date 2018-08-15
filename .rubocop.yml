@@ -15,6 +15,9 @@ Style/FormatStringToken:
 Style/NumericPredicate:
     Enabled: false
 
+Style/TrailingCommaInArguments:
+    Enabled: false
+
 Style/TrailingCommaInArrayLiteral:
     Enabled: false
 
