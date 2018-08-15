@@ -267,7 +267,6 @@ class ReaderTest < Minitest::Test # :nodoc:
   # too easy to test its behaviour with real databases, so construct dummy ones
   # directly.
   #
-  # rubocop:disable Metrics/MethodLength
   def test_read_node
     tests = [
       {
@@ -320,7 +319,6 @@ class ReaderTest < Minitest::Test # :nodoc:
       assert_equal(test[:right], test[:check_right])
     end
   end
-  # rubocop:enable Metrics/MethodLength
 
   def check_metadata(reader, ip_version, record_size)
     metadata = reader.metadata
