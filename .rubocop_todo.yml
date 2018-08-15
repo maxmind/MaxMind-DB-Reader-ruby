@@ -7,11 +7,6 @@
 # versions of RuboCop, may require this file to be generated again.
 
 # Offense count: 1
-Naming/AccessorMethodName:
-  Exclude:
-    - 'bin/mmdb-benchmark.rb'
-
-# Offense count: 1
 # Configuration parameters: NamePrefix, NamePrefixBlacklist, NameWhitelist, MethodDefinitionMacros.
 # NamePrefix: is_, has_, have_
 # NamePrefixBlacklist: is_, has_, have_

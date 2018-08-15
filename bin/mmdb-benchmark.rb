@@ -3,7 +3,7 @@
 require 'maxmind/db'
 
 def main
-  args = get_args
+  args = parse_args
   return false if args.nil?
 
   reader = MaxMind::DB.new(args[:database], mode: MaxMind::DB::MODE_MEMORY)
@@ -11,7 +11,7 @@ def main
   true
 end
 
-def get_args
+def parse_args
   if ARGV.length != 2
     print_usage
     return nil
