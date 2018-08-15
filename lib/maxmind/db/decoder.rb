@@ -57,10 +57,9 @@ module MaxMind # :nodoc:
       end
 
       def verify_size(expected, actual)
-        if expected != actual
-          raise InvalidDatabaseError,
-                'The MaxMind DB file\'s data section contains bad data (unknown data type or corrupt data)'.freeze
-        end
+        return if expected == actual
+        raise InvalidDatabaseError,
+              'The MaxMind DB file\'s data section contains bad data (unknown data type or corrupt data)'.freeze
       end
 
       def decode_int32(size, offset)
