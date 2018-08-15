@@ -85,7 +85,7 @@ class DecoderTest < Minitest::Test # :nodoc:
         'zh' => '人'
       },
       "\xe1\x44\x6e\x61\x6d\x65\xe2\x42\x65\x6e".b +
-       "\x43\x46\x6f\x6f\x42\x7a\x68\x43\xe4\xba\xba".b => {
+      "\x43\x46\x6f\x6f\x42\x7a\x68\x43\xe4\xba\xba".b => {
         'name' => {
           'en' => 'Foo',
           'zh' => '人'
