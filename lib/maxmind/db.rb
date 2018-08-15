@@ -141,7 +141,7 @@ module MaxMind # :nodoc:
       ip_version = ip.ipv6? ? 6 : 4
       if ip_version == 6 && @ip_version == 4
         raise ArgumentError,
-          "Error looking up #{ip}. You attempted to look up an IPv6 address in an IPv4-only database."
+              "Error looking up #{ip}. You attempted to look up an IPv6 address in an IPv4-only database."
       end
 
       pointer = find_address_in_tree(ip, ip_version)
@@ -241,7 +241,7 @@ module MaxMind # :nodoc:
 
       if offset_in_file >= @size
         raise InvalidDatabaseError,
-          'The MaxMind DB file\'s search tree is corrupt'.freeze
+              'The MaxMind DB file\'s search tree is corrupt'.freeze
       end
 
       data, _ = @decoder.decode(offset_in_file)
@@ -259,7 +259,7 @@ module MaxMind # :nodoc:
       end
 
       raise InvalidDatabaseError,
-        'Metadata section not found. Is this a valid MaxMind DB file?'.freeze
+            'Metadata section not found. Is this a valid MaxMind DB file?'.freeze
     end
 
     def is_at_metadata(index)
