@@ -257,7 +257,7 @@ module MaxMind # :nodoc:
       stop_index = @size - metadata_max_size
       index = @size - METADATA_START_MARKER_LENGTH
       while index >= stop_index
-        return index + METADATA_START_MARKER_LENGTH if is_at_metadata(index)
+        return index + METADATA_START_MARKER_LENGTH if at_metadata?(index)
         index -= 1
       end
 
@@ -265,7 +265,7 @@ module MaxMind # :nodoc:
             'Metadata section not found. Is this a valid MaxMind DB file?'.freeze
     end
 
-    def is_at_metadata(index)
+    def at_metadata?(index)
       @io.read(index, METADATA_START_MARKER_LENGTH) == METADATA_START_MARKER
     end
 
