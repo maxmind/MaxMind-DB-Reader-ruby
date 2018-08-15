@@ -198,10 +198,8 @@ module MaxMind # :nodoc:
         next_byte = buf.ord
         type_num = next_byte + 7
         if type_num < 7
-          # rubocop:disable Metrics/LineLength
           raise InvalidDatabaseError,
                 "Something went horribly wrong in the decoder. An extended type resolved to a type number < 8 (#{type_num})"
-          # rubocop:enable Metrics/LineLength
         end
         [type_num, offset + 1]
       end

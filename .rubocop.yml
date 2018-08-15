@@ -1,9 +1,10 @@
-inherit_from: .rubocop_todo.yml
-
 Metrics/AbcSize:
     Enabled: false
 
 Metrics/ClassLength:
+    Enabled: false
+
+Metrics/LineLength:
     Enabled: false
 
 Metrics/MethodLength:
