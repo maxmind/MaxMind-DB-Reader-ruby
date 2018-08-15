@@ -7,7 +7,7 @@ class DecoderTest < Minitest::Test # :nodoc:
     arrays = {
       "\x00\x04".b => [],
       "\x01\x04\x43\x46\x6f\x6f".b => ['Foo'],
-      "\x02\x04\x43\x46\x6f\x6f\x43\xe4\xba\xba".b => ['Foo', '人'],
+      "\x02\x04\x43\x46\x6f\x6f\x43\xe4\xba\xba".b => %w[Foo 人],
     }
     validate_type_decoding('arrays', arrays)
   end
@@ -93,7 +93,7 @@ class DecoderTest < Minitest::Test # :nodoc:
       },
       "\xe1\x49\x6c\x61\x6e\x67\x75\x61\x67\x65\x73".b +
       "\x02\x04\x42\x65\x6e\x42\x7a\x68".b => {
-        'languages' => ['en', 'zh']
+        'languages' => %w[en zh]
       },
       MMDBUtil.make_metadata_map(28) => {
         'node_count'                  => 0,
@@ -229,7 +229,7 @@ class DecoderTest < Minitest::Test # :nodoc:
     offset = 0
     r = decoder.decode(offset)
 
-    if ['float', 'double'].include?(type)
+    if %w[float double].include?(type)
       assert_in_delta(expected, r[0], 0.001, name)
     else
       assert_equal(expected, r[0], name)

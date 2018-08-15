@@ -334,7 +334,7 @@ class ReaderTest < Minitest::Test # :nodoc:
       'description',
     )
     assert_equal(ip_version, metadata.ip_version, 'ip_version')
-    assert_equal(['en', 'zh'], metadata.languages, 'languages')
+    assert_equal(%w[en zh], metadata.languages, 'languages')
     assert_operator(metadata.node_count, :>, 36, 'node_count')
     assert_equal(record_size, metadata.record_size, 'record_size')
   end
