@@ -1,26 +1,23 @@
+# Metrics are too arbitrary.
 Metrics/AbcSize:
     Enabled: false
-
 Metrics/ClassLength:
     Enabled: false
-
 Metrics/LineLength:
     Enabled: false
-
 Metrics/MethodLength:
     Enabled: false
 
+# Weird.
 Style/FormatStringToken:
     Enabled: false
-
 Style/NumericPredicate:
     Enabled: false
 
+# Trailing commas are good.
 Style/TrailingCommaInArguments:
     Enabled: false
-
 Style/TrailingCommaInArrayLiteral:
     Enabled: false
-
 Style/TrailingCommaInHashLiteral:
     Enabled: false
