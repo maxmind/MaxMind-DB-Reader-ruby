@@ -3,7 +3,7 @@
 require 'maxmind/db'
 
 def main
-  args = get_args
+  args = parse_args
   return false if args.nil?
 
   reader = MaxMind::DB.new(args[:database], mode: MaxMind::DB::MODE_MEMORY)
@@ -11,7 +11,7 @@ def main
   true
 end
 
-def get_args
+def parse_args
   if ARGV.length != 2
     print_usage
     return nil
@@ -27,9 +27,9 @@ def get_args
 end
 
 def print_usage
-  STDERR.puts "Usage: #{$0} <MMDB file> [IP file]"
+  STDERR.puts "Usage: #{$PROGRAM_NAME} <MMDB file> [IP file]"
   STDERR.puts
-  STDERR.puts "Benchmark by reading IPs from the IP file and looking up each one in the MMDB file."
+  STDERR.puts 'Benchmark by reading IPs from the IP file and looking up each one in the MMDB file.'
 end
 
 def benchmark(reader, file)
@@ -44,16 +44,16 @@ def benchmark(reader, file)
       reader.get(line)
 
       write_status(start, n) if n % 1000 == 0
-      return if n == count
+      break if n == count
     end
   end
 end
 
-def write_status(start, n)
+def write_status(start, count)
   now = Time.now.to_f
   elapsed = now - start
-  rate = 1.0 * n / elapsed
-  puts '%d @ %.2f lookups per second (%d seconds elapsed)' % [n, rate, elapsed]
+  rate = 1.0 * count / elapsed
+  puts format('%d @ %.2f lookups per second (%d seconds elapsed)', count, rate, elapsed)
 end
 
 exit 0 if main

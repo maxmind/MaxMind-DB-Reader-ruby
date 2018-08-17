@@ -8,5 +8,5 @@ end
 RuboCop::RakeTask.new
 
 desc 'Run tests and RuboCop'
-task :default => :test
-task :default => :rubocop
+task default: :test
+task default: :rubocop

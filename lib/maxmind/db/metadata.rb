@@ -35,16 +35,16 @@ module MaxMind # :nodoc:
       attr_reader :description
 
       # +m+ is a hash representing the metadata map.
-      def initialize(m)
-        @node_count                  = m['node_count']
-        @record_size                 = m['record_size']
-        @ip_version                  = m['ip_version']
-        @database_type               = m['database_type']
-        @languages                   = m['languages']
-        @binary_format_major_version = m['binary_format_major_version']
-        @binary_format_minor_version = m['binary_format_minor_version']
-        @build_epoch                 = m['build_epoch']
-        @description                 = m['description']
+      def initialize(map)
+        @node_count                  = map['node_count']
+        @record_size                 = map['record_size']
+        @ip_version                  = map['ip_version']
+        @database_type               = map['database_type']
+        @languages                   = map['languages']
+        @binary_format_major_version = map['binary_format_major_version']
+        @binary_format_minor_version = map['binary_format_minor_version']
+        @build_epoch                 = map['build_epoch']
+        @description                 = map['description']
       end
 
       # The size of a node in bytes.

@@ -53,7 +53,7 @@ module MaxMind # :nodoc:
     private_constant :METADATA_START_MARKER
     METADATA_START_MARKER_LENGTH = 14
     private_constant :METADATA_START_MARKER_LENGTH
-    METADATA_MAX_SIZE = 131072
+    METADATA_MAX_SIZE = 131_072
     private_constant :METADATA_MAX_SIZE
 
     # Return the metadata associated with the {MaxMind
@@ -83,7 +83,7 @@ module MaxMind # :nodoc:
     #           MODE_AUTO. Refer to the definition of those constants for an
     #           explanation of their meaning.
     def initialize(database, options = {})
-      options[:mode] = MODE_AUTO if !options.has_key?(:mode)
+      options[:mode] = MODE_AUTO unless options.key?(:mode)
 
       case options[:mode]
       when MODE_AUTO, MODE_FILE
@@ -101,7 +101,7 @@ module MaxMind # :nodoc:
 
         metadata_start = find_metadata_start
         metadata_decoder = Decoder.new(@io, metadata_start)
-        metadata_map, _ = metadata_decoder.decode(metadata_start)
+        metadata_map, = metadata_decoder.decode(metadata_start)
         @metadata = Metadata.new(metadata_map)
         @decoder = Decoder.new(@io, @metadata.search_tree_size +
                                DATA_SECTION_SEPARATOR_SIZE)
@@ -117,7 +117,7 @@ module MaxMind # :nodoc:
         # Find @ipv4_start up front. If we don't, we either have a race to
         # get/set it or have to synchronize access.
         start_node(0)
-      rescue => e
+      rescue StandardError => e
         @io.close
         raise e
       end
@@ -141,7 +141,7 @@ module MaxMind # :nodoc:
       ip_version = ip.ipv6? ? 6 : 4
       if ip_version == 6 && @ip_version == 4
         raise ArgumentError,
-          "Error looking up #{ip}. You attempted to look up an IPv6 address in an IPv4-only database."
+              "Error looking up #{ip}. You attempted to look up an IPv6 address in an IPv4-only database."
       end
 
       pointer = find_address_in_tree(ip, ip_version)
@@ -195,15 +195,13 @@ module MaxMind # :nodoc:
 
     # Read a record from the indicated node. Index indicates whether it's the
     # left (0) or right (1) record.
+    #
+    # rubocop:disable Metrics/CyclomaticComplexity
     def read_node(node_number, index)
       base_offset = node_number * @node_byte_size
 
       if @record_size == 24
-        if index == 0
-          offset = base_offset
-        else
-          offset = base_offset + 3
-        end
+        offset = index == 0 ? base_offset : base_offset + 3
         buf = @io.read(offset, 3)
         node_bytes = "\x00".freeze.b << buf
         # When we support only Ruby 2.4+, we can change String#unpack calls
@@ -215,36 +213,33 @@ module MaxMind # :nodoc:
         if index == 0
           buf = @io.read(base_offset, 4)
           n = buf.unpack('N'.freeze)[0]
-          last_24 = n >> 8
-          first_4 = (n & 0xf0) << 20
-          return first_4 | last_24
+          last24 = n >> 8
+          first4 = (n & 0xf0) << 20
+          return first4 | last24
         end
         buf = @io.read(base_offset + 3, 4)
         return buf.unpack('N'.freeze)[0] & 0x0fffffff
       end
 
       if @record_size == 32
-        if index == 0
-          offset = base_offset
-        else
-          offset = base_offset + 4
-        end
+        offset = index == 0 ? base_offset : base_offset + 4
         node_bytes = @io.read(offset, 4)
         return node_bytes.unpack('N'.freeze)[0]
       end
 
       raise InvalidDatabaseError, "Unsupported record size: #{@record_size}"
     end
+    # rubocop:enable Metrics/CyclomaticComplexity
 
     def resolve_data_pointer(pointer)
       offset_in_file = pointer - @node_count + @search_tree_size
 
       if offset_in_file >= @size
         raise InvalidDatabaseError,
-          'The MaxMind DB file\'s search tree is corrupt'.freeze
+              'The MaxMind DB file\'s search tree is corrupt'.freeze
       end
 
-      data, _ = @decoder.decode(offset_in_file)
+      data, = @decoder.decode(offset_in_file)
       data
     end
 
@@ -254,15 +249,15 @@ module MaxMind # :nodoc:
       stop_index = @size - metadata_max_size
       index = @size - METADATA_START_MARKER_LENGTH
       while index >= stop_index
-        return index + METADATA_START_MARKER_LENGTH if is_at_metadata(index)
+        return index + METADATA_START_MARKER_LENGTH if at_metadata?(index)
         index -= 1
       end
 
       raise InvalidDatabaseError,
-        'Metadata section not found. Is this a valid MaxMind DB file?'.freeze
+            'Metadata section not found. Is this a valid MaxMind DB file?'.freeze
     end
 
-    def is_at_metadata(index)
+    def at_metadata?(index)
       @io.read(index, METADATA_START_MARKER_LENGTH) == METADATA_START_MARKER
     end
 

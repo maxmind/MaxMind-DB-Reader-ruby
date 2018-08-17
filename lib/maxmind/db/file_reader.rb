@@ -9,9 +9,7 @@ module MaxMind # :nodoc:
         @mutex = Mutex.new
       end
 
-      def size
-        @size
-      end
+      attr_reader :size
 
       def close
         @fh.close

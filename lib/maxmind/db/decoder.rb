@@ -19,7 +19,7 @@ module MaxMind # :nodoc:
       # section.
       #
       # +pointer_test+ is used for testing pointer code.
-      def initialize(io, pointer_base=0, pointer_test=false)
+      def initialize(io, pointer_base = 0, pointer_test = false)
         @io = io
         @pointer_base = pointer_base
         @pointer_test = pointer_test
@@ -57,10 +57,9 @@ module MaxMind # :nodoc:
       end
 
       def verify_size(expected, actual)
-        if expected != actual
-          raise InvalidDatabaseError,
-            'The MaxMind DB file\'s data section contains bad data (unknown data type or corrupt data)'.freeze
-        end
+        return if expected == actual
+        raise InvalidDatabaseError,
+              'The MaxMind DB file\'s data section contains bad data (unknown data type or corrupt data)'.freeze
       end
 
       def decode_int32(size, offset)
@@ -130,7 +129,7 @@ module MaxMind # :nodoc:
         when 2
           new_offset = offset + 3
           buf = (size & 0x7).chr << @io.read(offset, 3)
-          pointer = buf.unpack('N'.freeze)[0] + 526336 + @pointer_base
+          pointer = buf.unpack('N'.freeze)[0] + 526_336 + @pointer_base
         else
           new_offset = offset + 4
           buf = @io.read(offset, 4)
@@ -139,7 +138,7 @@ module MaxMind # :nodoc:
 
         return pointer, new_offset if @pointer_test
 
-        value, _ = decode(pointer)
+        value, = decode(pointer)
         [value, new_offset]
       end
 
@@ -200,7 +199,7 @@ module MaxMind # :nodoc:
         type_num = next_byte + 7
         if type_num < 7
           raise InvalidDatabaseError,
-            "Something went horribly wrong in the decoder. An extended type resolved to a type number < 8 (#{type_num})"
+                "Something went horribly wrong in the decoder. An extended type resolved to a type number < 8 (#{type_num})"
         end
         [type_num, offset + 1]
       end
@@ -225,7 +224,7 @@ module MaxMind # :nodoc:
         end
 
         size_bytes = "\x00".freeze.b << @io.read(offset, 3)
-        size = 65821 + size_bytes.unpack('N'.freeze)[0]
+        size = 65_821 + size_bytes.unpack('N'.freeze)[0]
         [size, offset + 3]
       end
     end
