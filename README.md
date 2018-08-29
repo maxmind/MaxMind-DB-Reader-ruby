@@ -52,3 +52,7 @@ This software is Copyright (c) 2018 by MaxMind, Inc.
 
 This is free software, licensed under the [Apache License, Version
 2.0](LICENSE-APACHE) or the [MIT License](LICENSE-MIT), at your option.
+
+## Also see
+
+* [GeoLite2City](https://github.com/barsoom/geolite2_city), a Gem bundling the GeoLite2 City database.
