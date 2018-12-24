@@ -167,6 +167,7 @@ module MaxMind # :nodoc:
       node_count = @node_count
       bit_count.times do |i|
         break if node >= node_count
+
         c = packed[i >> 3].ord
         bit = 1 & (c >> 7 - (i % 8))
         node = read_node(node, bit)
@@ -187,6 +188,7 @@ module MaxMind # :nodoc:
       node = 0
       96.times do
         break if node >= @metadata.node_count
+
         node = read_node(node, 0)
       end
 
@@ -250,6 +252,7 @@ module MaxMind # :nodoc:
       index = @size - METADATA_START_MARKER_LENGTH
       while index >= stop_index
         return index + METADATA_START_MARKER_LENGTH if at_metadata?(index)
+
         index -= 1
       end
 

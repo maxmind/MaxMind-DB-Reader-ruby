@@ -41,7 +41,7 @@ class ReaderTest < Minitest::Test # :nodoc:
     assert_equal(
       {
         'mapX' => {
-          'arrayX'       => [7, 8, 9],
+          'arrayX' => [7, 8, 9],
           'utf8_stringX' => 'hello',
         },
       },
@@ -270,28 +270,28 @@ class ReaderTest < Minitest::Test # :nodoc:
       {
         record_size: 24,
         # Left record + right record
-        node_bytes:  "\xab\xcd\xef".b + "\xbc\xfe\xfa".b,
-        left:        11_259_375,
-        right:       12_386_042,
-        check_left:  "\x00\xab\xcd\xef".b.unpack('N')[0],
+        node_bytes: "\xab\xcd\xef".b + "\xbc\xfe\xfa".b,
+        left: 11_259_375,
+        right: 12_386_042,
+        check_left: "\x00\xab\xcd\xef".b.unpack('N')[0],
         check_right: "\x00\xbc\xfe\xfa".b.unpack('N')[0],
       },
       {
         record_size: 28,
         # Left record (part) + middle byte + right record (part)
-        node_bytes:  "\xab\xcd\xef".b + "\x12".b + "\xfd\xdc\xfa".b,
-        left:        28_036_591,
-        right:       50_191_610,
-        check_left:  "\x01\xab\xcd\xef".b.unpack('N')[0],
+        node_bytes: "\xab\xcd\xef".b + "\x12".b + "\xfd\xdc\xfa".b,
+        left: 28_036_591,
+        right: 50_191_610,
+        check_left: "\x01\xab\xcd\xef".b.unpack('N')[0],
         check_right: "\x02\xfd\xdc\xfa".b.unpack('N')[0],
       },
       {
         record_size: 32,
         # Left record + right record
-        node_bytes:  "\xab\xcd\xef\x12".b + "\xfd\xdc\xfa\x15".b,
-        left:        2_882_400_018,
-        right:       4_259_117_589,
-        check_left:  "\xab\xcd\xef\x12".b.unpack('N')[0],
+        node_bytes: "\xab\xcd\xef\x12".b + "\xfd\xdc\xfa\x15".b,
+        left: 2_882_400_018,
+        right: 4_259_117_589,
+        check_left: "\xab\xcd\xef\x12".b.unpack('N')[0],
         check_right: "\xfd\xdc\xfa\x15".b.unpack('N')[0],
       },
     ]
@@ -350,10 +350,10 @@ class ReaderTest < Minitest::Test # :nodoc:
     end
 
     pairs = {
-      '1.1.1.3'  => '1.1.1.2',
-      '1.1.1.5'  => '1.1.1.4',
-      '1.1.1.7'  => '1.1.1.4',
-      '1.1.1.9'  => '1.1.1.8',
+      '1.1.1.3' => '1.1.1.2',
+      '1.1.1.5' => '1.1.1.4',
+      '1.1.1.7' => '1.1.1.4',
+      '1.1.1.9' => '1.1.1.8',
       '1.1.1.15' => '1.1.1.8',
       '1.1.1.17' => '1.1.1.16',
       '1.1.1.31' => '1.1.1.16',
@@ -388,7 +388,7 @@ class ReaderTest < Minitest::Test # :nodoc:
     end
 
     pairs = {
-      '::2:0:1'  => '::2:0:0',
+      '::2:0:1' => '::2:0:0',
       '::2:0:33' => '::2:0:0',
       '::2:0:39' => '::2:0:0',
       '::2:0:41' => '::2:0:40',
