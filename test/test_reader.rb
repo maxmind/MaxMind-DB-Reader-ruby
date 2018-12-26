@@ -111,7 +111,7 @@ class ReaderTest < Minitest::Test # :nodoc:
     e = assert_raises ArgumentError do
       reader.get('not_ip')
     end
-    assert_equal('invalid address', e.message)
+    assert(e.message.match(/invalid address/))
     reader.close
   end
 
