@@ -6,6 +6,20 @@ This is the Ruby API for reading [MaxMind
 DB](https://maxmind.github.io/MaxMind-DB/) files. MaxMind DB is a binary
 file format that stores data indexed by IP address subnets (IPv4 or IPv6).
 
+
+## Installation
+
+```
+gem install maxmind-db --pre
+```
+
+Or from source:
+
+```
+gem build maxmind-db.spec
+gem install ./maxmind-db-xxx.gem
+```
+
 ## Usage
 
 ```ruby
@@ -23,6 +37,9 @@ end
 
 reader.close
 ```
+
+For more information see the
+[documentation](https://www.rubydoc.info/gems/maxmind-db).
 
 ## Requirements
 

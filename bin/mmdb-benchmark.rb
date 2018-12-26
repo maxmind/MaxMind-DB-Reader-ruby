@@ -22,7 +22,7 @@ def parse_args
 
   {
     database: database,
-    ip_file:  ip_file,
+    ip_file: ip_file,
   }
 end
 

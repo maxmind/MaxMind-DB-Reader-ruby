@@ -58,6 +58,7 @@ module MaxMind # :nodoc:
 
       def verify_size(expected, actual)
         return if expected == actual
+
         raise InvalidDatabaseError,
               'The MaxMind DB file\'s data section contains bad data (unknown data type or corrupt data)'.freeze
       end
@@ -152,15 +153,15 @@ module MaxMind # :nodoc:
       end
 
       TYPE_DECODER = {
-        1  => :decode_pointer,
-        2  => :decode_utf8_string,
-        3  => :decode_double,
-        4  => :decode_bytes,
-        5  => :decode_uint16,
-        6  => :decode_uint32,
-        7  => :decode_map,
-        8  => :decode_int32,
-        9  => :decode_uint64,
+        1 => :decode_pointer,
+        2 => :decode_utf8_string,
+        3 => :decode_double,
+        4 => :decode_bytes,
+        5 => :decode_uint16,
+        6 => :decode_uint32,
+        7 => :decode_map,
+        8 => :decode_int32,
+        9 => :decode_uint64,
         10 => :decode_uint128,
         11 => :decode_array,
         14 => :decode_boolean,

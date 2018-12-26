@@ -96,15 +96,15 @@ class DecoderTest < Minitest::Test # :nodoc:
         'languages' => %w[en zh]
       },
       MMDBUtil.make_metadata_map(28) => {
-        'node_count'                  => 0,
-        'record_size'                 => 28,
-        'ip_version'                  => 4,
-        'database_type'               => 'test',
-        'languages'                   => ['en'],
+        'node_count' => 0,
+        'record_size' => 28,
+        'ip_version' => 4,
+        'database_type' => 'test',
+        'languages' => ['en'],
         'binary_format_major_version' => 2,
         'binary_format_minor_version' => 0,
-        'build_epoch'                 => 0,
-        'description'                 => 'hi',
+        'build_epoch' => 0,
+        'description' => 'hi',
       },
     }
     validate_type_decoding('maps', maps)
