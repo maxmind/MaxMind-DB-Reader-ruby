@@ -14,6 +14,12 @@ module MaxMind # :nodoc:
 
       attr_reader :size
 
+      # Override to not show @buf in inspect to avoid showing it in irb.
+      def inspect
+        s = "#<#{self.class.name}:0x#{self.class.object_id.to_s(16)} "
+        s << '@size=' << @size.inspect << '>'
+      end
+
       def close; end
 
       def read(offset, size)
