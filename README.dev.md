@@ -2,12 +2,13 @@
 * Update changelog and set release date
 * Bump version in `maxmind-db.gemspec`
 * Commit: `git commit -m v1.0.0`
-* Push: `git push`
 * Tag: `git tag -a v1.0.0 -m v1.0.0`
-* Push tag: `git push --tags`
-* Create `.gem` file: `gem build maxmind-db.spec`
+* Clean up to be sure nothing stray gets into gem: `git clean -dxff`
+* Create `.gem` file: `gem build maxmind-db.gemspec`
 * Complete prerequisites (see below)
 * Upload to rubygems.org: `gem push maxmind-db-1.0.0.gem`
+* Push: `git push`
+* Push tag: `git push --tags`
 * Double check it looks okay at https://rubygems.org/gems/maxmind-db and
   https://www.rubydoc.info/gems/maxmind-db
 
