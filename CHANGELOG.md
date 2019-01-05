@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.0.0
+## 1.0.0 - 2019-01-04
 * We no longer include the database's buffer in inspect output. This avoids
   showing excessive output when creating a memory reader in irb. Reported
   by Wojciech Wnętrzak. GitHub #6.
