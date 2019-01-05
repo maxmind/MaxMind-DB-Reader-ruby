@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module MaxMind # :nodoc:
   class DB
     class MemoryReader # :nodoc:
@@ -8,7 +10,7 @@ module MaxMind # :nodoc:
           return
         end
 
-        @buf = File.read(filename, mode: 'rb'.freeze).freeze
+        @buf = File.read(filename, mode: 'rb').freeze
         @size = @buf.length
       end
 

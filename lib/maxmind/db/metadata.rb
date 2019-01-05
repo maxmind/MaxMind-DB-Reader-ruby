@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module MaxMind # :nodoc:
   class DB
     # Metadata holds metadata about a {MaxMind

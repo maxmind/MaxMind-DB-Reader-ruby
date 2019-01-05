@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module MaxMind # :nodoc:
   class DB
     # An InvalidDatabaseError means the {MaxMind

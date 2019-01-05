@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'ipaddr'
 require 'maxmind/db/decoder'
 require 'maxmind/db/errors'
@@ -49,7 +51,7 @@ module MaxMind # :nodoc:
 
     DATA_SECTION_SEPARATOR_SIZE = 16
     private_constant :DATA_SECTION_SEPARATOR_SIZE
-    METADATA_START_MARKER = "\xAB\xCD\xEFMaxMind.com".freeze.b.freeze
+    METADATA_START_MARKER = "\xAB\xCD\xEFMaxMind.com".b.freeze
     private_constant :METADATA_START_MARKER
     METADATA_START_MARKER_LENGTH = 14
     private_constant :METADATA_START_MARKER_LENGTH
@@ -93,7 +95,7 @@ module MaxMind # :nodoc:
       when MODE_PARAM_IS_BUFFER
         @io = MemoryReader.new(database, is_buffer: true)
       else
-        raise ArgumentError, 'Invalid mode'.freeze
+        raise ArgumentError, 'Invalid mode'
       end
 
       begin
@@ -177,7 +179,7 @@ module MaxMind # :nodoc:
 
       return node if node > node_count
 
-      raise InvalidDatabaseError, 'Invalid node in search tree'.freeze
+      raise InvalidDatabaseError, 'Invalid node in search tree'
     end
 
     def start_node(length)
@@ -205,28 +207,28 @@ module MaxMind # :nodoc:
       if @record_size == 24
         offset = index == 0 ? base_offset : base_offset + 3
         buf = @io.read(offset, 3)
-        node_bytes = "\x00".freeze.b << buf
+        node_bytes = "\x00".b << buf
         # When we support only Ruby 2.4+, we can change String#unpack calls
         # that take the first element to String#unpack1.
-        return node_bytes.unpack('N'.freeze)[0]
+        return node_bytes.unpack('N')[0]
       end
 
       if @record_size == 28
         if index == 0
           buf = @io.read(base_offset, 4)
-          n = buf.unpack('N'.freeze)[0]
+          n = buf.unpack('N')[0]
           last24 = n >> 8
           first4 = (n & 0xf0) << 20
           return first4 | last24
         end
         buf = @io.read(base_offset + 3, 4)
-        return buf.unpack('N'.freeze)[0] & 0x0fffffff
+        return buf.unpack('N')[0] & 0x0fffffff
       end
 
       if @record_size == 32
         offset = index == 0 ? base_offset : base_offset + 4
         node_bytes = @io.read(offset, 4)
-        return node_bytes.unpack('N'.freeze)[0]
+        return node_bytes.unpack('N')[0]
       end
 
       raise InvalidDatabaseError, "Unsupported record size: #{@record_size}"
@@ -238,7 +240,7 @@ module MaxMind # :nodoc:
 
       if offset_in_file >= @size
         raise InvalidDatabaseError,
-              'The MaxMind DB file\'s search tree is corrupt'.freeze
+              'The MaxMind DB file\'s search tree is corrupt'
       end
 
       data, = @decoder.decode(offset_in_file)
@@ -257,7 +259,7 @@ module MaxMind # :nodoc:
       end
 
       raise InvalidDatabaseError,
-            'Metadata section not found. Is this a valid MaxMind DB file?'.freeze
+            'Metadata section not found. Is this a valid MaxMind DB file?'
     end
 
     def at_metadata?(index)
