@@ -1,3 +1,6 @@
+AllCops:
+    TargetRubyVersion: 2.3
+
 # Metrics are too arbitrary.
 Metrics/AbcSize:
     Enabled: false
