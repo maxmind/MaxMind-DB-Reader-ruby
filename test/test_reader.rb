@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'maxmind/db'
 require 'minitest/autorun'
 require 'mmdb_util'

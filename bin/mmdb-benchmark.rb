@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# frozen_string_literal: true
 
 require 'maxmind/db'
 
@@ -27,7 +28,7 @@ def parse_args
 end
 
 def print_usage
-  STDERR.puts "Usage: #{$PROGRAM_NAME} <MMDB file> [IP file]"
+  STDERR.puts "Usage: #{$PROGRAM_NAME} <MMDB file> <IP file>"
   STDERR.puts
   STDERR.puts 'Benchmark by reading IPs from the IP file and looking up each one in the MMDB file.'
 end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 Gem::Specification.new do |s|
   s.authors     = ['William Storey']
   s.files       = Dir['**/*']
@@ -16,4 +18,5 @@ Gem::Specification.new do |s|
     'homepage_uri' => 'https://github.com/maxmind/MaxMind-DB-Reader-ruby',
     'source_code_uri' => 'https://github.com/maxmind/MaxMind-DB-Reader-ruby',
   }
+  s.required_ruby_version = '>= 2.3.0'
 end

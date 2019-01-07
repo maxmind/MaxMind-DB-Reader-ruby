@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'maxmind/db/errors'
 
 module MaxMind # :nodoc:
@@ -47,43 +49,43 @@ module MaxMind # :nodoc:
       def decode_double(size, offset)
         verify_size(8, size)
         buf = @io.read(offset, 8)
-        [buf.unpack('G'.freeze)[0], offset + 8]
+        [buf.unpack('G')[0], offset + 8]
       end
 
       def decode_float(size, offset)
         verify_size(4, size)
         buf = @io.read(offset, 4)
-        [buf.unpack('g'.freeze)[0], offset + 4]
+        [buf.unpack('g')[0], offset + 4]
       end
 
       def verify_size(expected, actual)
         return if expected == actual
 
         raise InvalidDatabaseError,
-              'The MaxMind DB file\'s data section contains bad data (unknown data type or corrupt data)'.freeze
+              'The MaxMind DB file\'s data section contains bad data (unknown data type or corrupt data)'
       end
 
       def decode_int32(size, offset)
-        decode_int('l>'.freeze, 4, size, offset)
+        decode_int('l>', 4, size, offset)
       end
 
       def decode_uint16(size, offset)
-        decode_int('n'.freeze, 2, size, offset)
+        decode_int('n', 2, size, offset)
       end
 
       def decode_uint32(size, offset)
-        decode_int('N'.freeze, 4, size, offset)
+        decode_int('N', 4, size, offset)
       end
 
       def decode_uint64(size, offset)
-        decode_int('Q>'.freeze, 8, size, offset)
+        decode_int('Q>', 8, size, offset)
       end
 
       def decode_int(type_code, type_size, size, offset)
         return 0, offset if size == 0
 
         buf = @io.read(offset, size)
-        buf = buf.rjust(type_size, "\x00".freeze) if size != type_size
+        buf = buf.rjust(type_size, "\x00") if size != type_size
         [buf.unpack(type_code)[0], offset + size]
       end
 
@@ -93,14 +95,14 @@ module MaxMind # :nodoc:
         buf = @io.read(offset, size)
 
         if size <= 8
-          buf = buf.rjust(8, "\x00".freeze)
-          return buf.unpack('Q>'.freeze)[0], offset + size
+          buf = buf.rjust(8, "\x00")
+          return buf.unpack('Q>')[0], offset + size
         end
 
-        a_bytes = buf[0...-8].rjust(8, "\x00".freeze)
+        a_bytes = buf[0...-8].rjust(8, "\x00")
         b_bytes = buf[-8...buf.length]
-        a = a_bytes.unpack('Q>'.freeze)[0]
-        b = b_bytes.unpack('Q>'.freeze)[0]
+        a = a_bytes.unpack('Q>')[0]
+        b = b_bytes.unpack('Q>')[0]
         a <<= 64
         [a | b, offset + size]
       end
@@ -122,19 +124,19 @@ module MaxMind # :nodoc:
         when 0
           new_offset = offset + 1
           buf = (size & 0x7).chr << @io.read(offset, 1)
-          pointer = buf.unpack('n'.freeze)[0] + @pointer_base
+          pointer = buf.unpack('n')[0] + @pointer_base
         when 1
           new_offset = offset + 2
-          buf = "\x00".freeze.b << (size & 0x7).chr << @io.read(offset, 2)
-          pointer = buf.unpack('N'.freeze)[0] + 2048 + @pointer_base
+          buf = "\x00".b << (size & 0x7).chr << @io.read(offset, 2)
+          pointer = buf.unpack('N')[0] + 2048 + @pointer_base
         when 2
           new_offset = offset + 3
           buf = (size & 0x7).chr << @io.read(offset, 3)
-          pointer = buf.unpack('N'.freeze)[0] + 526_336 + @pointer_base
+          pointer = buf.unpack('N')[0] + 526_336 + @pointer_base
         else
           new_offset = offset + 4
           buf = @io.read(offset, 4)
-          pointer = buf.unpack('N'.freeze)[0] + @pointer_base
+          pointer = buf.unpack('N')[0] + @pointer_base
         end
 
         return pointer, new_offset if @pointer_test
@@ -220,12 +222,12 @@ module MaxMind # :nodoc:
 
         if size == 30
           size_bytes = @io.read(offset, 2)
-          size = 285 + size_bytes.unpack('n'.freeze)[0]
+          size = 285 + size_bytes.unpack('n')[0]
           return size, offset + 2
         end
 
-        size_bytes = "\x00".freeze.b << @io.read(offset, 3)
-        size = 65_821 + size_bytes.unpack('N'.freeze)[0]
+        size_bytes = "\x00".b << @io.read(offset, 3)
+        size = 65_821 + size_bytes.unpack('N')[0]
         [size, offset + 3]
       end
     end
