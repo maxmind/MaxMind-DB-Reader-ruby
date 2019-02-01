@@ -210,9 +210,7 @@ module MaxMind # :nodoc:
       def size_from_ctrl_byte(ctrl_byte, offset, type_num)
         size = ctrl_byte & 0x1f
 
-        return size, offset if type_num == 1
-
-        return size, offset if size < 29
+        return size, offset if type_num == 1 || size < 29
 
         if size == 29
           size_bytes = @io.read(offset, 1)
