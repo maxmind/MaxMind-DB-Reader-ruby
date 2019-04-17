@@ -28,9 +28,11 @@ def parse_args
 end
 
 def print_usage
+  # rubocop:disable Style/StderrPuts
   STDERR.puts "Usage: #{$PROGRAM_NAME} <MMDB file> <IP file>"
   STDERR.puts
   STDERR.puts 'Benchmark by reading IPs from the IP file and looking up each one in the MMDB file.'
+  # rubocop:enable Style/StderrPuts
 end
 
 def benchmark(reader, file)
