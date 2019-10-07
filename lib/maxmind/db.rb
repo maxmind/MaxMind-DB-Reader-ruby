@@ -136,6 +136,25 @@ module MaxMind # :nodoc:
     # +ip_address+ is a string in the standard notation. It may be IPv4 or
     # IPv6.
     def get(ip_address)
+      record, = get_with_prefix_length(ip_address)
+
+      record
+    end
+
+    # Return an array containing the record for the +ip_address+ in the
+    # {MaxMind DB}[http://maxmind.github.io/MaxMind-DB/] and its associated
+    # network prefix length. The record can be one of several types and
+    # depends on the contents of the database.
+    #
+    # If no record is found for +ip_address+, the record will be +nil+ and
+    # the prefix length will be the value for the missing network.
+    #
+    # +get_with_prefix_length+ raises an exception if there is an error
+    # performing the lookup.
+    #
+    # +ip_address+ is a string in the standard notation. It may be IPv4 or
+    # IPv6.
+    def get_with_prefix_length(ip_address)
       ip = IPAddr.new(ip_address)
       # We could check the IP has the correct prefix (32 or 128) but I do not
       # for performance reasons.
@@ -146,10 +165,10 @@ module MaxMind # :nodoc:
               "Error looking up #{ip}. You attempted to look up an IPv6 address in an IPv4-only database."
       end
 
-      pointer = find_address_in_tree(ip, ip_version)
-      return nil if pointer == 0
+      pointer, depth = find_address_in_tree(ip, ip_version)
+      return nil, depth if pointer == 0
 
-      resolve_data_pointer(pointer)
+      [resolve_data_pointer(pointer), depth]
     end
 
     private
@@ -167,17 +186,20 @@ module MaxMind # :nodoc:
       node = start_node(bit_count)
 
       node_count = @node_count
-      bit_count.times do |i|
-        break if node >= node_count
 
-        c = packed[i >> 3].ord
-        bit = 1 & (c >> 7 - (i % 8))
+      depth = 0
+      loop do
+        break if depth >= bit_count || node >= node_count
+
+        c = packed[depth >> 3].ord
+        bit = 1 & (c >> 7 - (depth % 8))
         node = read_node(node, bit)
+        depth += 1
       end
 
-      return 0 if node == node_count
+      return 0, depth if node == node_count
 
-      return node if node > node_count
+      return node, depth if node > node_count
 
       raise InvalidDatabaseError, 'Invalid node in search tree'
     end
