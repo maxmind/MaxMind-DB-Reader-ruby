@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* The method `get_with_prefix_length` was added. This method returns both
+  the record and the network prefix length associated with the record in
+  the database.
 * Simplified a check for whether to return early in the decoder. Pull
   request by Ivan Palamarchuk. GitHub #12.
 

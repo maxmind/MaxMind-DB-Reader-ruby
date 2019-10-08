@@ -29,6 +29,115 @@ class ReaderTest < Minitest::Test # :nodoc:
     end
   end
 
+  def test_get_with_prefix_len
+    decoder_record = {
+      'array' => [1, 2, 3],
+      'boolean' => true,
+      'bytes' => "\x00\x00\x00*",
+      'double' => 42.123456,
+      'float' => 1.100000023841858,
+      'int32' => -268_435_456,
+      'map' => {
+        'mapX' => {
+          'arrayX' => [7, 8, 9],
+          'utf8_stringX' => 'hello',
+        },
+      },
+      'uint128' => 1_329_227_995_784_915_872_903_807_060_280_344_576,
+      'uint16' => 0x64,
+      'uint32' => 0x10000000,
+      'uint64' => 0x1000000000000000,
+      'utf8_string' => 'unicode! ☯ - ♫',
+    }
+
+    tests = [{
+      'ip' => '1.1.1.1',
+      'file_name' => 'MaxMind-DB-test-ipv6-32.mmdb',
+      'expected_prefix_length' => 8,
+      'expected_record' => nil,
+    }, {
+      'ip' => '::1:ffff:ffff',
+      'file_name' => 'MaxMind-DB-test-ipv6-24.mmdb',
+      'expected_prefix_length' => 128,
+      'expected_record' => {
+        'ip' => '::1:ffff:ffff'
+      },
+    }, {
+      'ip' => '::2:0:1',
+      'file_name' => 'MaxMind-DB-test-ipv6-24.mmdb',
+      'expected_prefix_length' => 122,
+      'expected_record' => {
+        'ip' => '::2:0:0'
+      },
+    }, {
+      'ip' => '1.1.1.1',
+      'file_name' => 'MaxMind-DB-test-ipv4-24.mmdb',
+      'expected_prefix_length' => 32,
+      'expected_record' => {
+        'ip' => '1.1.1.1'
+      },
+    }, {
+      'ip' => '1.1.1.3',
+      'file_name' => 'MaxMind-DB-test-ipv4-24.mmdb',
+      'expected_prefix_length' => 31,
+      'expected_record' => {
+        'ip' => '1.1.1.2'
+      },
+    }, {
+      'ip' => '1.1.1.3',
+      'file_name' => 'MaxMind-DB-test-decoder.mmdb',
+      'expected_prefix_length' => 24,
+      'expected_record' => decoder_record,
+    }, {
+      'ip' => '::ffff:1.1.1.128',
+      'file_name' => 'MaxMind-DB-test-decoder.mmdb',
+      'expected_prefix_length' => 120,
+      'expected_record' => decoder_record,
+    }, {
+      'ip' => '::1.1.1.128',
+      'file_name' => 'MaxMind-DB-test-decoder.mmdb',
+      'expected_prefix_length' => 120,
+      'expected_record' => decoder_record,
+    }, {
+      'ip' => '200.0.2.1',
+      'file_name' => 'MaxMind-DB-no-ipv4-search-tree.mmdb',
+      'expected_prefix_length' => 0,
+      'expected_record' => '::0/64',
+    }, {
+      'ip' => '::200.0.2.1',
+      'file_name' => 'MaxMind-DB-no-ipv4-search-tree.mmdb',
+      'expected_prefix_length' => 64,
+      'expected_record' => '::0/64',
+    }, {
+      'ip' => '0:0:0:0:ffff:ffff:ffff:ffff',
+      'file_name' => 'MaxMind-DB-no-ipv4-search-tree.mmdb',
+      'expected_prefix_length' => 64,
+      'expected_record' => '::0/64',
+    }, {
+      'ip' => 'ef00::',
+      'file_name' => 'MaxMind-DB-no-ipv4-search-tree.mmdb',
+      'expected_prefix_length' => 1,
+      'expected_record' => nil,
+    }]
+
+    tests.each do |test|
+      reader = MaxMind::DB.new('test/data/test-data/' + test['file_name'])
+      record, prefix_length = reader.get_with_prefix_length(test['ip'])
+
+      assert_equal(test['expected_prefix_length'], prefix_length,
+                   format('expected prefix_length of %d for %s in %s but got %p',
+                          test['expected_prefix_length'], test['ip'],
+                          test['file_name'], prefix_length))
+
+      msg = format('expected_record for %s in %s', test['ip'], test['file_name'])
+      if test['expected_record'].nil?
+        assert_nil(record, msg)
+      else
+        assert_equal(test['expected_record'], record, msg)
+      end
+    end
+  end
+
   def test_decoder
     reader = MaxMind::DB.new(
       'test/data/test-data/MaxMind-DB-test-decoder.mmdb'
