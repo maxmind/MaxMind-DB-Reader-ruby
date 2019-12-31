@@ -43,7 +43,7 @@ For more information see the
 
 ## Requirements
 
-This code requires Ruby version 2.3 or higher. Older versions may work, but
+This code requires Ruby version 2.4 or higher. Older versions may work, but
 are not supported.
 
 ## Contributing
