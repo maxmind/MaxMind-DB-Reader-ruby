@@ -7,6 +7,7 @@
   the database.
 * Simplified a check for whether to return early in the decoder. Pull
   request by Ivan Palamarchuk. GitHub #12.
+* Explicit support for Ruby 2.3 was dropped since it is now EOL.
 
 ## 1.0.0 - 2019-01-04
 
