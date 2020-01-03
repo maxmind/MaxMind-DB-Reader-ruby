@@ -9,9 +9,9 @@ require 'maxmind/db/metadata.rb'
 
 module MaxMind # :nodoc:
   # DB provides a way to read {MaxMind DB
-  # files}[http://maxmind.github.io/MaxMind-DB/].
+  # files}[https://maxmind.github.io/MaxMind-DB/].
   #
-  # {MaxMind DB}[http://maxmind.github.io/MaxMind-DB/] is a binary file format
+  # {MaxMind DB}[https://maxmind.github.io/MaxMind-DB/] is a binary file format
   # that stores data indexed by IP address subnets (IPv4 or IPv6).
   #
   # This class is a pure Ruby implementation of a reader for the format.
@@ -59,11 +59,11 @@ module MaxMind # :nodoc:
     private_constant :METADATA_MAX_SIZE
 
     # Return the metadata associated with the {MaxMind
-    # DB}[http://maxmind.github.io/MaxMind-DB/] as a Metadata object.
+    # DB}[https://maxmind.github.io/MaxMind-DB/] as a Metadata object.
     attr_reader :metadata
 
     # Create a DB. A DB provides a way to read {MaxMind DB
-    # files}[http://maxmind.github.io/MaxMind-DB/]. If you're performing
+    # files}[https://maxmind.github.io/MaxMind-DB/]. If you're performing
     # multiple lookups, it's most efficient to create one DB and reuse it.
     #
     # Once created, the DB is safe to use for lookups from multiple threads. It
@@ -73,7 +73,7 @@ module MaxMind # :nodoc:
     # Creating the DB may raise an exception if initialization fails.
     #
     # +database+ is a path to a {MaxMind
-    # DB}[http://maxmind.github.io/MaxMind-DB/].
+    # DB}[https://maxmind.github.io/MaxMind-DB/].
     #
     # +options+ is an option hash where each key is a symbol. The options
     # control the behaviour of the DB.
@@ -126,7 +126,7 @@ module MaxMind # :nodoc:
     end
 
     # Return the record for the +ip_address+ in the {MaxMind
-    # DB}[http://maxmind.github.io/MaxMind-DB/]. The record can be one of
+    # DB}[https://maxmind.github.io/MaxMind-DB/]. The record can be one of
     # several types and depends on the contents of the database.
     #
     # If no record is found for +ip_address+, +get+ returns +nil+.
@@ -142,7 +142,7 @@ module MaxMind # :nodoc:
     end
 
     # Return an array containing the record for the +ip_address+ in the
-    # {MaxMind DB}[http://maxmind.github.io/MaxMind-DB/] and its associated
+    # {MaxMind DB}[https://maxmind.github.io/MaxMind-DB/] and its associated
     # network prefix length. The record can be one of several types and
     # depends on the contents of the database.
     #

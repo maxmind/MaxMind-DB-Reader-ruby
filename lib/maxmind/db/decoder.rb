@@ -4,7 +4,7 @@ require 'maxmind/db/errors'
 
 module MaxMind # :nodoc:
   class DB
-    # +Decoder+ decodes a {MaxMind DB}[http://maxmind.github.io/MaxMind-DB/]
+    # +Decoder+ decodes a {MaxMind DB}[https://maxmind.github.io/MaxMind-DB/]
     # data section.
     #
     # Typically you will interact with this class through a Reader rather than
