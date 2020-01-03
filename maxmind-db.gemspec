@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
   s.version     = '1.0.0'
 
   s.description = 'A gem for reading MaxMind DB files. MaxMind DB is a binary file format that stores data indexed by IP address subnets (IPv4 or IPv6).'
-  s.email       = 'wstorey@maxmind.com'
+  s.email       = 'support@maxmind.com'
   s.homepage    = 'https://github.com/maxmind/MaxMind-DB-Reader-ruby'
   s.licenses    = ['Apache-2.0', 'MIT']
   s.metadata = {
