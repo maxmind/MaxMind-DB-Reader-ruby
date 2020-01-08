@@ -3,7 +3,7 @@
 module MaxMind # :nodoc:
   class DB
     # Metadata holds metadata about a {MaxMind
-    # DB}[http://maxmind.github.io/MaxMind-DB/] file.
+    # DB}[https://maxmind.github.io/MaxMind-DB/] file.
     class Metadata
       # The number of nodes in the database.
       attr_reader :node_count
