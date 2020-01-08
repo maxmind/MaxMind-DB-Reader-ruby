@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.1.0 (2020-01-08)
 
 * The method `get_with_prefix_length` was added. This method returns both
   the record and the network prefix length associated with the record in
