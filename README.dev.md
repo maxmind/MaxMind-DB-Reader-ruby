@@ -1,4 +1,5 @@
 # How to release
+* Update dependencies and commit: `bundle update`
 * Update changelog and set release date
 * Bump version in `maxmind-db.gemspec`
 * Commit: `git commit -m v1.0.0`
