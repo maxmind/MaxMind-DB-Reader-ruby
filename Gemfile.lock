@@ -3,7 +3,7 @@ GEM
   specs:
     ast (2.4.0)
     jaro_winkler (1.5.4)
-    minitest (5.13.0)
+    minitest (5.14.0)
     parallel (1.19.1)
     parser (2.7.0.1)
       ast (~> 2.4.0)
