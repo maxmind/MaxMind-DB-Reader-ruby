@@ -2,9 +2,10 @@
 
 require 'maxmind/db/errors'
 
-module MaxMind # :nodoc:
+module MaxMind
   class DB
-    class FileReader # :nodoc:
+    # @!visibility private
+    class FileReader
       def initialize(filename)
         @fh = File.new(filename, 'rb')
         @size = @fh.size

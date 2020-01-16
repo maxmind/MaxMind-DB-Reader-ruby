@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class MMDBUtil # :nodoc:
+class MMDBUtil
   def self.make_metadata_map(record_size)
     # Map
     "\xe9".b +

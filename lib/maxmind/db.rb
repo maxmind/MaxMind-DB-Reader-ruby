@@ -7,7 +7,7 @@ require 'maxmind/db/file_reader.rb'
 require 'maxmind/db/memory_reader.rb'
 require 'maxmind/db/metadata.rb'
 
-module MaxMind # :nodoc:
+module MaxMind
   # DB provides a way to read {MaxMind DB
   # files}[https://maxmind.github.io/MaxMind-DB/].
   #
@@ -31,11 +31,6 @@ module MaxMind # :nodoc:
   #   end
   #
   #   reader.close
-  #
-  # == Exceptions
-  #
-  # DB raises an InvalidDatabaseError if the database is corrupt or invalid. It
-  # can raise other exceptions, such as ArgumentError, if other errors occur.
   class DB
     # Choose the default method to open the database. Currently the default is
     # MODE_FILE.
@@ -47,7 +42,9 @@ module MaxMind # :nodoc:
     MODE_MEMORY = :MODE_MEMORY
     # Treat the database parameter as containing a database already read into
     # memory. It must be a binary string. This primarily exists for testing.
-    MODE_PARAM_IS_BUFFER = :MODE_PARAM_IS_BUFFER # :nodoc:
+    #
+    # @!visibility private
+    MODE_PARAM_IS_BUFFER = :MODE_PARAM_IS_BUFFER
 
     DATA_SECTION_SEPARATOR_SIZE = 16
     private_constant :DATA_SECTION_SEPARATOR_SIZE
@@ -59,7 +56,9 @@ module MaxMind # :nodoc:
     private_constant :METADATA_MAX_SIZE
 
     # Return the metadata associated with the {MaxMind
-    # DB}[https://maxmind.github.io/MaxMind-DB/] as a Metadata object.
+    # DB}[https://maxmind.github.io/MaxMind-DB/]
+    #
+    # @return [MaxMind::DB::Metadata]
     attr_reader :metadata
 
     # Create a DB. A DB provides a way to read {MaxMind DB
@@ -70,20 +69,20 @@ module MaxMind # :nodoc:
     # is safe to use after forking only if you use MODE_MEMORY or if your
     # version of Ruby supports IO#pread.
     #
-    # Creating the DB may raise an exception if initialization fails.
+    # @param database [String] a path to a {MaxMind
+    #   DB}[https://maxmind.github.io/MaxMind-DB/].
     #
-    # +database+ is a path to a {MaxMind
-    # DB}[https://maxmind.github.io/MaxMind-DB/].
+    # @param options [Hash<Symbol, Symbol>] options controlling the behavior of
+    #   the DB.
     #
-    # +options+ is an option hash where each key is a symbol. The options
-    # control the behaviour of the DB.
+    # @option options [Symbol] :mode Defines how to open the database. It may
+    #   be one of MODE_AUTO, MODE_FILE, or MODE_MEMORY. If you don't provide
+    #   one, DB uses MODE_AUTO. Refer to the definition of those constants for
+    #   an explanation of their meaning.
     #
-    # The available options are:
+    # @raise [InvalidDatabaseError] if the database is corrupt or invalid.
     #
-    # [+:mode+] defines how to open the database. It may be one of MODE_AUTO,
-    #           MODE_FILE, or MODE_MEMORY. If you don't provide one, DB uses
-    #           MODE_AUTO. Refer to the definition of those constants for an
-    #           explanation of their meaning.
+    # @raise [ArgumentError] if the mode is invalid.
     def initialize(database, options = {})
       options[:mode] = MODE_AUTO unless options.key?(:mode)
 
@@ -125,35 +124,44 @@ module MaxMind # :nodoc:
       end
     end
 
-    # Return the record for the +ip_address+ in the {MaxMind
+    # Return the record for the IP address in the {MaxMind
     # DB}[https://maxmind.github.io/MaxMind-DB/]. The record can be one of
     # several types and depends on the contents of the database.
     #
-    # If no record is found for +ip_address+, +get+ returns +nil+.
+    # If no record is found for the IP address, +get+ returns +nil+.
     #
-    # +get+ raises an exception if there is an error performing the lookup.
+    # @param ip_address [String] a string in the standard notation. It may be
+    #   IPv4 or IPv6.
     #
-    # +ip_address+ is a string in the standard notation. It may be IPv4 or
-    # IPv6.
+    # @raise [ArgumentError] if you attempt to look up an IPv6 address in an
+    #   IPv4-only database.
+    #
+    # @raise [InvalidDatabaseError] if the database is corrupt or invalid.
+    #
+    # @return [Object, nil]
     def get(ip_address)
       record, = get_with_prefix_length(ip_address)
 
       record
     end
 
-    # Return an array containing the record for the +ip_address+ in the
+    # Return an array containing the record for the IP address in the
     # {MaxMind DB}[https://maxmind.github.io/MaxMind-DB/] and its associated
     # network prefix length. The record can be one of several types and
     # depends on the contents of the database.
     #
-    # If no record is found for +ip_address+, the record will be +nil+ and
+    # If no record is found for the IP address, the record will be +nil+ and
     # the prefix length will be the value for the missing network.
     #
-    # +get_with_prefix_length+ raises an exception if there is an error
-    # performing the lookup.
+    # @param ip_address [String] a string in the standard notation. It may be
+    #   IPv4 or IPv6.
     #
-    # +ip_address+ is a string in the standard notation. It may be IPv4 or
-    # IPv6.
+    # @raise [ArgumentError] if you attempt to look up an IPv6 address in an
+    #   IPv4-only database.
+    #
+    # @raise [InvalidDatabaseError] if the database is corrupt or invalid.
+    #
+    # @return [Array<(Object, Integer)>]
     def get_with_prefix_length(ip_address)
       ip = IPAddr.new(ip_address)
       # We could check the IP has the correct prefix (32 or 128) but I do not
@@ -290,8 +298,7 @@ module MaxMind # :nodoc:
 
     # Close the DB and return resources to the system.
     #
-    # There is no useful return value. #close raises an exception if there is
-    # an error.
+    # @return [void]
     def close
       @io.close
     end
