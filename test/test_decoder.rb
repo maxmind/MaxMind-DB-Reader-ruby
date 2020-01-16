@@ -4,7 +4,7 @@ require 'maxmind/db'
 require 'minitest/autorun'
 require 'mmdb_util'
 
-class DecoderTest < Minitest::Test # :nodoc:
+class DecoderTest < Minitest::Test
   def test_arrays
     arrays = {
       "\x00\x04".b => [],

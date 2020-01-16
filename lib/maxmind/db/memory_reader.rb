@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
-module MaxMind # :nodoc:
+module MaxMind
   class DB
-    class MemoryReader # :nodoc:
+    # @!visibility private
+    class MemoryReader
       def initialize(filename, options = {})
         if options[:is_buffer]
           @buf = filename

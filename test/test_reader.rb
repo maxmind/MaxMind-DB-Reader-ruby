@@ -4,7 +4,7 @@ require 'maxmind/db'
 require 'minitest/autorun'
 require 'mmdb_util'
 
-class ReaderTest < Minitest::Test # :nodoc:
+class ReaderTest < Minitest::Test
   def test_reader
     modes = [
       MaxMind::DB::MODE_FILE,

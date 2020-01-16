@@ -2,14 +2,16 @@
 
 require 'maxmind/db/errors'
 
-module MaxMind # :nodoc:
+module MaxMind
   class DB
     # +Decoder+ decodes a {MaxMind DB}[https://maxmind.github.io/MaxMind-DB/]
     # data section.
     #
     # Typically you will interact with this class through a Reader rather than
     # directly.
-    class Decoder # :nodoc:
+    #
+    # @!visibility private
+    class Decoder
       # Create a +Decoder+.
       #
       # +io+ is the DB. It must provide a +read+ method. It must be opened in
