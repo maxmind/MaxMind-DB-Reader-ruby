@@ -13,13 +13,6 @@ file format that stores data indexed by IP address subnets (IPv4 or IPv6).
 gem install maxmind-db
 ```
 
-Or from source:
-
-```
-gem build maxmind-db.spec
-gem install ./maxmind-db-xxx.gem
-```
-
 ## Usage
 
 ```ruby
