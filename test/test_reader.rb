@@ -29,6 +29,19 @@ class ReaderTest < Minitest::Test
     end
   end
 
+  def test_reader_inspect
+    modes = [
+      MaxMind::DB::MODE_FILE,
+      MaxMind::DB::MODE_MEMORY,
+    ]
+
+    modes.each do |mode|
+      filename = 'test/data/test-data/MaxMind-DB-test-ipv4-24.mmdb'
+      reader = MaxMind::DB.new(filename, mode: mode)
+      assert_instance_of(String, reader.inspect)
+    end
+  end
+
   def test_get_with_prefix_len
     decoder_record = {
       'array' => [1, 2, 3],
