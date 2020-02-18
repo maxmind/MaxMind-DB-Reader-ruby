@@ -19,7 +19,7 @@ module MaxMind
 
       # Override to not show @buf in inspect to avoid showing it in irb.
       def inspect
-        "#<#{self.class.name}:0x#{self.class.object_id.to_s(16)} @size={@size.inspect}>"
+        "#<#{self.class.name}:0x#{self.class.object_id.to_s(16)}, @size=#{@size.inspect}>"
       end
 
       def close; end
