@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.1
+
+* Fixed the memory reader's inspect method to no longer attempt to modify a
+  frozen string. Pull request by Tietew. GitHub #35.
+
 ## 1.1.0 (2020-01-08)
 
 * The method `get_with_prefix_length` was added. This method returns both
