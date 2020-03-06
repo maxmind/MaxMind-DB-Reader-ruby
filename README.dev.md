@@ -1,12 +1,15 @@
 # How to release
-* Update dependencies and commit: `bundle update`
-* Update changelog and set release date
-* Bump version in `maxmind-db.gemspec`
+* Ensure tests pass: `rake`
+* Update changelog: Set version and release date
+* Set version in `maxmind-db.gemspec`
+* Add them: `git add -p`
 * Commit: `git commit -m v1.0.0`
 * Tag: `git tag -a v1.0.0 -m v1.0.0`
 * Clean up to be sure nothing stray gets into gem: `git clean -dxff`
 * Create `.gem` file: `gem build maxmind-db.gemspec`
 * Complete prerequisites (see below)
+  * You only need to do this if `~/.gem/credentials` is missing
+    `:rubygems_api_key`.
 * Upload to rubygems.org: `gem push maxmind-db-1.0.0.gem`
 * Push: `git push`
 * Push tag: `git push --tags`
