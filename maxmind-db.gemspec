@@ -14,7 +14,7 @@ Gem::Specification.new do |s|
   s.metadata = {
     'bug_tracker_uri' => 'https://github.com/maxmind/MaxMind-DB-Reader-ruby/issues',
     'changelog_uri' => 'https://github.com/maxmind/MaxMind-DB-Reader-ruby/blob/master/CHANGELOG.md',
-    'documentation_uri' => 'https://github.com/maxmind/MaxMind-DB-Reader-ruby',
+    'documentation_uri' => 'https://www.rubydoc.info/gems/maxmind-db',
     'homepage_uri' => 'https://github.com/maxmind/MaxMind-DB-Reader-ruby',
     'source_code_uri' => 'https://github.com/maxmind/MaxMind-DB-Reader-ruby',
   }
