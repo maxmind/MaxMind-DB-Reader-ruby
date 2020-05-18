@@ -2,7 +2,7 @@ GEM
   remote: https://rubygems.org/
   specs:
     ast (2.4.0)
-    minitest (5.14.0)
+    minitest (5.14.1)
     parallel (1.19.1)
     parser (2.7.1.2)
       ast (~> 2.4.0)
