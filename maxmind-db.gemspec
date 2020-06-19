@@ -19,4 +19,9 @@ Gem::Specification.new do |s|
     'source_code_uri' => 'https://github.com/maxmind/MaxMind-DB-Reader-ruby',
   }
   s.required_ruby_version = '>= 2.4.0'
+
+  s.add_development_dependency 'minitest'
+  s.add_development_dependency 'rake'
+  s.add_development_dependency 'rubocop'
+  s.add_development_dependency 'rubocop-performance'
 end
