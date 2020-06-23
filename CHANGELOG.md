@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.1.1
+## 1.1.1 (2020-06-23)
 
 * Fixed the memory reader's inspect method to no longer attempt to modify a
   frozen string. Pull request by Tietew. GitHub #35.
