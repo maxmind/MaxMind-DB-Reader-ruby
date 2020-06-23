@@ -229,8 +229,6 @@ module MaxMind
 
     # Read a record from the indicated node. Index indicates whether it's the
     # left (0) or right (1) record.
-    #
-    # rubocop:disable Metrics/CyclomaticComplexity
     def read_node(node_number, index)
       base_offset = node_number * @node_byte_size
 
@@ -261,7 +259,6 @@ module MaxMind
 
       raise InvalidDatabaseError, "Unsupported record size: #{@record_size}"
     end
-    # rubocop:enable Metrics/CyclomaticComplexity
 
     def resolve_data_pointer(pointer)
       offset_in_file = pointer - @node_count + @search_tree_size
