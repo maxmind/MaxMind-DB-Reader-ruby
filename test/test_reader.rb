@@ -14,8 +14,7 @@ class ReaderTest < Minitest::Test
     modes.each do |mode|
       [24, 28, 32].each do |record_size|
         [4, 6].each do |ip_version|
-          filename = 'test/data/test-data/MaxMind-DB-test-ipv' +
-                     ip_version.to_s + '-' + record_size.to_s + '.mmdb'
+          filename = "test/data/test-data/MaxMind-DB-test-ipv#{ip_version}-#{record_size}.mmdb"
           reader = MaxMind::DB.new(filename, mode: mode)
           check_metadata(reader, ip_version, record_size)
           if ip_version == 4
@@ -134,7 +133,7 @@ class ReaderTest < Minitest::Test
     }]
 
     tests.each do |test|
-      reader = MaxMind::DB.new('test/data/test-data/' + test['file_name'])
+      reader = MaxMind::DB.new("test/data/test-data/#{test['file_name']}")
       record, prefix_length = reader.get_with_prefix_length(test['ip'])
 
       assert_equal(test['expected_prefix_length'], prefix_length,
