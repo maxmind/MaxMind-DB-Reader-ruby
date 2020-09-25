@@ -12,8 +12,10 @@ class ReaderTest < Minitest::Test
     ]
 
     modes.each do |mode|
-      [24, 28, 32].each do |record_size|
-        [4, 6].each do |ip_version|
+      record_sizes = [24, 28, 32]
+      record_sizes.each do |record_size|
+        ip_versions = [4, 6]
+        ip_versions.each do |ip_version|
           filename = "test/data/test-data/MaxMind-DB-test-ipv#{ip_version}-#{record_size}.mmdb"
           reader = MaxMind::DB.new(filename, mode: mode)
           check_metadata(reader, ip_version, record_size)
