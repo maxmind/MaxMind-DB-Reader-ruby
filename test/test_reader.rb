@@ -234,7 +234,7 @@ class ReaderTest < Minitest::Test
     e = assert_raises ArgumentError do
       reader.get('not_ip')
     end
-    assert(e.message.match(/invalid address/))
+    assert(e.message.include?('invalid address'))
     reader.close
   end
 
@@ -242,7 +242,7 @@ class ReaderTest < Minitest::Test
     e = assert_raises SystemCallError do
       MaxMind::DB.new('file-does-not-exist.mmdb')
     end
-    assert(e.message.match(/No such file or directory/))
+    assert(e.message.include?('No such file or directory'))
   end
 
   def test_nondatabase
@@ -259,14 +259,14 @@ class ReaderTest < Minitest::Test
     e = assert_raises ArgumentError do
       MaxMind::DB.new('README.md', {}, 'blah')
     end
-    assert(e.message.match(/wrong number of arguments/))
+    assert(e.message.include?('wrong number of arguments'))
   end
 
   def test_no_constructor_args
     e = assert_raises ArgumentError do
       MaxMind::DB.new
     end
-    assert(e.message.match(/wrong number of arguments/))
+    assert(e.message.include?('wrong number of arguments'))
   end
 
   def test_too_many_get_args
@@ -276,7 +276,7 @@ class ReaderTest < Minitest::Test
     e = assert_raises ArgumentError do
       reader.get('1.1.1.1', 'blah')
     end
-    assert(e.message.match(/wrong number of arguments/))
+    assert(e.message.include?('wrong number of arguments'))
     reader.close
   end
 
@@ -287,7 +287,7 @@ class ReaderTest < Minitest::Test
     e = assert_raises ArgumentError do
       reader.get
     end
-    assert(e.message.match(/wrong number of arguments/))
+    assert(e.message.include?('wrong number of arguments'))
     reader.close
   end
 
@@ -298,7 +298,7 @@ class ReaderTest < Minitest::Test
     e = assert_raises ArgumentError do
       reader.metadata('hi')
     end
-    assert(e.message.match(/wrong number of arguments/))
+    assert(e.message.include?('wrong number of arguments'))
     reader.close
   end
 
@@ -309,7 +309,7 @@ class ReaderTest < Minitest::Test
     e = assert_raises NoMethodError do
       reader.metadata.what
     end
-    assert(e.message.match(/undefined method `what'/))
+    assert(e.message.include?('undefined method `what\''))
     reader.close
   end
 
