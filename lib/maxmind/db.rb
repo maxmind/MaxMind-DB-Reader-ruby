@@ -3,9 +3,9 @@
 require 'ipaddr'
 require 'maxmind/db/decoder'
 require 'maxmind/db/errors'
-require 'maxmind/db/file_reader.rb'
-require 'maxmind/db/memory_reader.rb'
-require 'maxmind/db/metadata.rb'
+require 'maxmind/db/file_reader'
+require 'maxmind/db/memory_reader'
+require 'maxmind/db/metadata'
 
 module MaxMind
   # DB provides a way to read {MaxMind DB
