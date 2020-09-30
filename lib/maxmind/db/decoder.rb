@@ -12,6 +12,8 @@ module MaxMind
     #
     # @!visibility private
     class Decoder
+      # rubocop:disable Style/OptionalBooleanParameter
+
       # Create a +Decoder+.
       #
       # +io+ is the DB. It must provide a +read+ method. It must be opened in
@@ -28,6 +30,7 @@ module MaxMind
         @pointer_base = pointer_base
         @pointer_test = pointer_test
       end
+      # rubocop:enable Style/OptionalBooleanParameter
 
       private
 

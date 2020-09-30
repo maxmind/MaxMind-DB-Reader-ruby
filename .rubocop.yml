@@ -2,6 +2,7 @@ require: rubocop-performance
 
 AllCops:
     TargetRubyVersion: 2.4
+    NewCops: enable
 
 # Metrics are too arbitrary.
 Metrics/AbcSize:
@@ -26,33 +27,3 @@ Style/TrailingCommaInArrayLiteral:
     Enabled: false
 Style/TrailingCommaInHashLiteral:
     Enabled: false
-
-# These are new and rubocop warns if you don't configure them.
-Layout/EmptyLinesAroundAttributeAccessor:
-    Enabled: true
-Layout/SpaceAroundMethodCallOperator:
-    Enabled: true
-Lint/RaiseException:
-    Enabled: true
-Lint/StructNewOverride:
-    Enabled: true
-Style/ExponentialNotation:
-    Enabled: true
-Style/SlicingWithRange:
-    Enabled: true
-Lint/DeprecatedOpenSSLConstant:
-    Enabled: true
-Lint/MixedRegexpCaptureTypes:
-    Enabled: true
-Style/HashEachMethods:
-    Enabled: true
-Style/HashTransformKeys:
-    Enabled: true
-Style/HashTransformValues:
-    Enabled: true
-Style/RedundantRegexpCharacterClass:
-    Enabled: true
-Style/RedundantRegexpEscape:
-    Enabled: true
-Style/RedundantFetchBlock:
-    Enabled: true

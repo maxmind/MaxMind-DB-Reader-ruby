@@ -12,10 +12,11 @@ class ReaderTest < Minitest::Test
     ]
 
     modes.each do |mode|
-      [24, 28, 32].each do |record_size|
-        [4, 6].each do |ip_version|
-          filename = 'test/data/test-data/MaxMind-DB-test-ipv' +
-                     ip_version.to_s + '-' + record_size.to_s + '.mmdb'
+      record_sizes = [24, 28, 32]
+      record_sizes.each do |record_size|
+        ip_versions = [4, 6]
+        ip_versions.each do |ip_version|
+          filename = "test/data/test-data/MaxMind-DB-test-ipv#{ip_version}-#{record_size}.mmdb"
           reader = MaxMind::DB.new(filename, mode: mode)
           check_metadata(reader, ip_version, record_size)
           if ip_version == 4
@@ -134,7 +135,7 @@ class ReaderTest < Minitest::Test
     }]
 
     tests.each do |test|
-      reader = MaxMind::DB.new('test/data/test-data/' + test['file_name'])
+      reader = MaxMind::DB.new("test/data/test-data/#{test['file_name']}")
       record, prefix_length = reader.get_with_prefix_length(test['ip'])
 
       assert_equal(test['expected_prefix_length'], prefix_length,
@@ -235,7 +236,7 @@ class ReaderTest < Minitest::Test
     e = assert_raises ArgumentError do
       reader.get('not_ip')
     end
-    assert(e.message.match(/invalid address/))
+    assert(e.message.include?('invalid address'))
     reader.close
   end
 
@@ -243,7 +244,7 @@ class ReaderTest < Minitest::Test
     e = assert_raises SystemCallError do
       MaxMind::DB.new('file-does-not-exist.mmdb')
     end
-    assert(e.message.match(/No such file or directory/))
+    assert(e.message.include?('No such file or directory'))
   end
 
   def test_nondatabase
@@ -260,14 +261,14 @@ class ReaderTest < Minitest::Test
     e = assert_raises ArgumentError do
       MaxMind::DB.new('README.md', {}, 'blah')
     end
-    assert(e.message.match(/wrong number of arguments/))
+    assert(e.message.include?('wrong number of arguments'))
   end
 
   def test_no_constructor_args
     e = assert_raises ArgumentError do
       MaxMind::DB.new
     end
-    assert(e.message.match(/wrong number of arguments/))
+    assert(e.message.include?('wrong number of arguments'))
   end
 
   def test_too_many_get_args
@@ -277,7 +278,7 @@ class ReaderTest < Minitest::Test
     e = assert_raises ArgumentError do
       reader.get('1.1.1.1', 'blah')
     end
-    assert(e.message.match(/wrong number of arguments/))
+    assert(e.message.include?('wrong number of arguments'))
     reader.close
   end
 
@@ -288,7 +289,7 @@ class ReaderTest < Minitest::Test
     e = assert_raises ArgumentError do
       reader.get
     end
-    assert(e.message.match(/wrong number of arguments/))
+    assert(e.message.include?('wrong number of arguments'))
     reader.close
   end
 
@@ -299,7 +300,7 @@ class ReaderTest < Minitest::Test
     e = assert_raises ArgumentError do
       reader.metadata('hi')
     end
-    assert(e.message.match(/wrong number of arguments/))
+    assert(e.message.include?('wrong number of arguments'))
     reader.close
   end
 
@@ -310,7 +311,7 @@ class ReaderTest < Minitest::Test
     e = assert_raises NoMethodError do
       reader.metadata.what
     end
-    assert(e.message.match(/undefined method `what'/))
+    assert(e.message.include?('undefined method `what\''))
     reader.close
   end
 
