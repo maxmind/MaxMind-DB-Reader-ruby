@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.0
+
+* Ruby 2.4 is no longer supported. If you're using Ruby 2.4, please use
+  version 1.1.1 of this gem.
+
 ## 1.1.1 (2020-06-23)
 
 * Fixed the memory reader's inspect method to no longer attempt to modify a

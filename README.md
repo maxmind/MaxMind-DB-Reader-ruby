@@ -36,7 +36,7 @@ For more information see the
 
 ## Requirements
 
-This code requires Ruby version 2.4 or higher.
+This code requires Ruby version 2.5 or higher.
 
 ## Contributing
 
