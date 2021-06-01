@@ -180,6 +180,14 @@ class ReaderTest < Minitest::Test
     reader.close
   end
 
+  def test_metadata_pointers
+    reader = MaxMind::DB.new(
+      'test/data/test-data/MaxMind-DB-test-metadata-pointers.mmdb'
+    )
+    assert_equal('Lots of pointers in metadata', reader.metadata.database_type)
+    reader.close
+  end
+
   def test_no_ipv4_search_tree
     reader = MaxMind::DB.new(
       'test/data/test-data/MaxMind-DB-no-ipv4-search-tree.mmdb'
