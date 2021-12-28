@@ -150,9 +150,9 @@ class DecoderTest < Minitest::Test
     "\x34\x35\x36\x37\x38\x39\x30\x31\x32\x33\x34".b +
     "\x35\x36\x37\x38\x39\x30\x31\x32\x33\x34\x35".b +
     "\x36\x37\x38\x39\x30".b => '123456789012345678901234567890',
-    "\x5e\x00\xd7".b + "\x78".b * 500 => 'x' * 500,
-    "\x5e\x06\xb3".b + "\x78".b * 2000 => 'x' * 2000,
-    "\x5f\x00\x10\x53".b + "\x78".b * 70_000 => 'x' * 70_000,
+    "\x5e\x00\xd7".b + ("\x78".b * 500) => 'x' * 500,
+    "\x5e\x06\xb3".b + ("\x78".b * 2000) => 'x' * 2000,
+    "\x5f\x00\x10\x53".b + ("\x78".b * 70_000) => 'x' * 70_000,
   }
   # rubocop:enable Style/ClassVars
 
@@ -194,9 +194,9 @@ class DecoderTest < Minitest::Test
       "\x02".b + ctrl_byte + "\x01\xf4".b => 500,
       "\x02".b + ctrl_byte + "\x2a\x78".b => 10_872,
     }
-    (bits / 8 + 1).times do |power|
-      expected = 2**(8 * power) - 1
-      input = [power].pack('C') + ctrl_byte + "\xff".b * power
+    ((bits / 8) + 1).times do |power|
+      expected = (2**(8 * power)) - 1
+      input = [power].pack('C') + ctrl_byte + ("\xff".b * power)
       uints[input] = expected
     end
     uints

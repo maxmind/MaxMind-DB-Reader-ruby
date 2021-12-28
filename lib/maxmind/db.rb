@@ -200,7 +200,7 @@ module MaxMind
         break if depth >= bit_count || node >= node_count
 
         c = packed[depth >> 3].ord
-        bit = 1 & (c >> 7 - (depth % 8))
+        bit = 1 & (c >> (7 - (depth % 8)))
         node = read_node(node, bit)
         depth += 1
       end

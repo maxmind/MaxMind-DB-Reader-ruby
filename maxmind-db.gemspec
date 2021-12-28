@@ -17,6 +17,7 @@ Gem::Specification.new do |s|
     'documentation_uri' => 'https://www.rubydoc.info/gems/maxmind-db',
     'homepage_uri' => 'https://github.com/maxmind/MaxMind-DB-Reader-ruby',
     'source_code_uri' => 'https://github.com/maxmind/MaxMind-DB-Reader-ruby',
+    'rubygems_mfa_required' => 'true',
   }
   s.required_ruby_version = '>= 2.5.0'
 
