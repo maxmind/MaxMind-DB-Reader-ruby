@@ -6,7 +6,6 @@ This is the Ruby API for reading [MaxMind
 DB](https://maxmind.github.io/MaxMind-DB/) files. MaxMind DB is a binary
 file format that stores data indexed by IP address subnets (IPv4 or IPv6).
 
-
 ## Installation
 
 ```
@@ -57,7 +56,7 @@ This library uses [Semantic Versioning](https://semver.org/).
 
 ## Copyright and License
 
-This software is Copyright (c) 2018 - 2021 by MaxMind, Inc.
+This software is Copyright (c) 2018 - 2022 by MaxMind, Inc.
 
 This is free software, licensed under the [Apache License, Version
 2.0](LICENSE-APACHE) or the [MIT License](LICENSE-MIT), at your option.
