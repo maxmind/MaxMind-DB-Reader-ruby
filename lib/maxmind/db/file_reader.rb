@@ -6,10 +6,36 @@ module MaxMind
   class DB
     # @!visibility private
     class FileReader
+      if ::File.method_defined?(:pread)
+        PReadFile = ::File
+      else
+        # For Windows support
+        class PReadFile
+          def initialize(filename, mode)
+            @mutex = Mutex.new
+            @file = File.new(filename, mode)
+          end
+
+          def size
+            @file.size
+          end
+
+          def close
+            @file.close
+          end
+
+          def pread(size, offset)
+            @mutex.synchronize do
+              @file.seek(offset, IO::SEEK_SET)
+              @file.read(size)
+            end
+          end
+        end
+      end
+
       def initialize(filename)
-        @fh = File.new(filename, 'rb')
+        @fh = PReadFile.new(filename, 'rb')
         @size = @fh.size
-        @mutex = Mutex.new
       end
 
       attr_reader :size
@@ -21,15 +47,7 @@ module MaxMind
       def read(offset, size)
         return ''.b if size == 0
 
-        # When we support only Ruby 2.5+, remove this and require pread.
-        if @fh.respond_to?(:pread)
-          buf = @fh.pread(size, offset)
-        else
-          @mutex.synchronize do
-            @fh.seek(offset, IO::SEEK_SET)
-            buf = @fh.read(size)
-          end
-        end
+        buf = @fh.pread(size, offset)
 
         raise InvalidDatabaseError, 'The MaxMind DB file contains bad data' if buf.nil? || buf.length != size
 
