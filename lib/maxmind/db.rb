@@ -273,7 +273,7 @@ module MaxMind
     end
 
     def find_metadata_start
-      metadata_max_size = @size < METADATA_MAX_SIZE ? @size : METADATA_MAX_SIZE
+      metadata_max_size = [@size, METADATA_MAX_SIZE].min
 
       stop_index = @size - metadata_max_size
       index = @size - METADATA_START_MARKER_LENGTH

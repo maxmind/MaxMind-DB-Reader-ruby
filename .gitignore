@@ -1,3 +1,5 @@
 *.swp
 /doc
 /.yardoc
+Gemfile.lock
+
