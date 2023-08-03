@@ -4,6 +4,8 @@
 
 * Ruby 2.4 is no longer supported. If you're using Ruby 2.4, please use
   version 1.1.1 of this gem.
+* `Object#respond_to?` is no longer called on every read. Pull request by
+  Jean byroot Boussier. GitHub #65.
 
 ## 1.1.1 (2020-06-23)
 
