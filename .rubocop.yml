@@ -27,3 +27,6 @@ Style/TrailingCommaInArrayLiteral:
     Enabled: false
 Style/TrailingCommaInHashLiteral:
     Enabled: false
+
+Gemspec/DevelopmentDependencies:
+    Enabled: false
