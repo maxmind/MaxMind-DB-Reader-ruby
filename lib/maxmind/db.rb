@@ -130,8 +130,7 @@ module MaxMind
     #
     # If no record is found for the IP address, +get+ returns +nil+.
     #
-    # @param ip_address [String] a string in the standard notation. It may be
-    #   IPv4 or IPv6.
+    # @param ip_address [String, IPAddr] IPv4 or IPv6 address.
     #
     # @raise [ArgumentError] if you attempt to look up an IPv6 address in an
     #   IPv4-only database.
@@ -153,8 +152,7 @@ module MaxMind
     # If no record is found for the IP address, the record will be +nil+ and
     # the prefix length will be the value for the missing network.
     #
-    # @param ip_address [String] a string in the standard notation. It may be
-    #   IPv4 or IPv6.
+    # @param ip_address [String, IPAddr] IPv4 or IPv6 address.
     #
     # @raise [ArgumentError] if you attempt to look up an IPv6 address in an
     #   IPv4-only database.
@@ -163,7 +161,8 @@ module MaxMind
     #
     # @return [Array<(Object, Integer)>]
     def get_with_prefix_length(ip_address)
-      ip = IPAddr.new(ip_address)
+      ip = ip_address.is_a?(IPAddr) ? ip_address : IPAddr.new(ip_address)
+
       # We could check the IP has the correct prefix (32 or 128) but I do not
       # for performance reasons.
 
