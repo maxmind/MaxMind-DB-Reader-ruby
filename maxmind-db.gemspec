@@ -5,7 +5,7 @@ Gem::Specification.new do |s|
   s.files       = Dir['**/*']
   s.name        = 'maxmind-db'
   s.summary     = 'A gem for reading MaxMind DB files.'
-  s.version     = '1.1.1'
+  s.version     = '1.2.0'
 
   s.description = 'A gem for reading MaxMind DB files. MaxMind DB is a binary file format that stores data indexed by IP address subnets (IPv4 or IPv6).'
   s.email       = 'support@maxmind.com'
