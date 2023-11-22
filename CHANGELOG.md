@@ -6,6 +6,9 @@
   version 1.1.1 of this gem.
 * `Object#respond_to?` is no longer called on every read. Pull request by
   Jean byroot Boussier. GitHub #65.
+* The `get` and `get_prefix_length` methods now accept the IP addresses as
+  `IPAddr` objects. Strings are still accepted too. Pull request by Eddie
+  Lebow. GitHub #69.
 
 ## 1.1.1 (2020-06-23)
 
