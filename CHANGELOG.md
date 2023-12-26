@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.0
+
+* Ruby 2.5 and 2.6 are no longer supported. If you're using one of these
+  versions, please use version 1.2.0 of this gem.
+
 ## 1.2.0 (2023-11-22)
 
 * Ruby 2.4 is no longer supported. If you're using Ruby 2.4, please use
