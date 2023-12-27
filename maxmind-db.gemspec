@@ -19,7 +19,7 @@ Gem::Specification.new do |s|
     'source_code_uri' => 'https://github.com/maxmind/MaxMind-DB-Reader-ruby',
     'rubygems_mfa_required' => 'true',
   }
-  s.required_ruby_version = '>= 2.5.0'
+  s.required_ruby_version = '>= 2.7.0'
 
   s.add_development_dependency 'minitest'
   s.add_development_dependency 'rake'
