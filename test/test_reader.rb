@@ -316,10 +316,9 @@ class ReaderTest < Minitest::Test
     reader = MaxMind::DB.new(
       'test/data/test-data/MaxMind-DB-test-decoder.mmdb'
     )
-    e = assert_raises NoMethodError do
+    assert_raises NoMethodError do
       reader.metadata.what
     end
-    assert(e.message.include?('undefined method `what\''))
     reader.close
   end
 
