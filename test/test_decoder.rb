@@ -211,11 +211,9 @@ class DecoderTest < Minitest::Test
   end
 
   def validate_type_decoding(type, tests)
-    values = []
-    tests.each do |input, expected|
-      values << check_decoding(type, input, expected)
+    tests.map do |input, expected|
+      check_decoding(type, input, expected)
     end
-    values
   end
 
   def check_decoding(type, input, expected, name = nil)
