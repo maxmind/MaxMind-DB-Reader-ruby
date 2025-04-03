@@ -20,6 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          submodules: true
           persist-credentials: false
 
       # zizmor complains that 'v1' is a ref that can be provided by both the branch and tag namespaces.
