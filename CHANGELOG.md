@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.2 (2025-04-03)
+
+* Re-release to fix a release script problem. There are no code changes.
+
 ## 1.3.1 (2025-04-03)
 
 * Re-release to fix a release script problem. There are no code changes.
