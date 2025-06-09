@@ -14,6 +14,10 @@ Layout/LineLength:
 Metrics/MethodLength:
     Enabled: false
 
+Naming/PredicateMethod:
+    AllowedMethods:
+        - main
+
 # Weird.
 Style/FormatStringToken:
     Enabled: false
