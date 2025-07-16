@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.0
+
+* Ruby 3.2+ is now required. If you're using Ruby 3.0 or 3.1, please use
+  version 1.3.2 of this gem.
+
 ## 1.3.2 (2025-04-03)
 
 * Re-release to fix a release script problem. There are no code changes.
