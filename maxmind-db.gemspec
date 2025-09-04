@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |s|
   s.authors     = ['William Storey']
-  s.files       = Dir['**/*'].difference(Dir['.github/**/*', 'dev-bin/**/*'])
+  s.files       = Dir['**/*'].difference(Dir['.github/**/*', 'dev-bin/**/*', 'test/**/*'])
   s.name        = 'maxmind-db'
   s.summary     = 'A gem for reading MaxMind DB files.'
   s.version     = '1.3.2'
