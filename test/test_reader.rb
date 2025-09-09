@@ -378,7 +378,9 @@ class ReaderTest < Minitest::Test
 
     threads = []
     num_threads.times do |i|
+      # rubocop:disable ThreadSafety/NewThread
       threads << Thread.new do
+        # rubocop:enable ThreadSafety/NewThread
         num_lookups.times do |j|
           thread_lookups[i] << reader.get("65.115.240.#{j}")
           thread_lookups[i] << reader.get("2a02:2770:3::#{j}")
