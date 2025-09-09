@@ -1,4 +1,6 @@
-require: rubocop-performance
+plugins:
+    - rubocop-minitest
+    - rubocop-performance
 
 AllCops:
     TargetRubyVersion: '3.2'
@@ -33,4 +35,8 @@ Style/TrailingCommaInHashLiteral:
     Enabled: false
 
 Gemspec/DevelopmentDependencies:
+    Enabled: false
+
+# Sometimes it makes sense to have lots of assertions.
+Minitest/MultipleAssertions:
     Enabled: false

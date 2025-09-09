@@ -158,6 +158,7 @@ class DecoderTest < Minitest::Test
 
   def test_string
     values = validate_type_decoding('string', @@strings)
+
     values.each do |s|
       assert_equal(Encoding::UTF_8, s.encoding)
     end
