@@ -39,6 +39,7 @@ class ReaderTest < Minitest::Test
     modes.each do |mode|
       filename = 'test/data/test-data/MaxMind-DB-test-ipv4-24.mmdb'
       reader = MaxMind::DB.new(filename, mode: mode)
+
       assert_instance_of(String, reader.inspect)
     end
   end
@@ -157,10 +158,11 @@ class ReaderTest < Minitest::Test
       'test/data/test-data/MaxMind-DB-test-decoder.mmdb'
     )
     record = reader.get('::1.1.1.0')
+
     assert_equal([1, 2, 3], record['array'])
-    assert_equal(true, record['boolean'])
+    assert(record['boolean'])
     assert_equal("\x00\x00\x00*".b, record['bytes'])
-    assert_equal(42.123456, record['double'])
+    assert_in_delta(42.123456, record['double'])
     assert_in_delta(1.1, record['float'])
     assert_equal(-268_435_456, record['int32'])
     assert_equal(
@@ -184,6 +186,7 @@ class ReaderTest < Minitest::Test
     reader = MaxMind::DB.new(
       'test/data/test-data/MaxMind-DB-test-metadata-pointers.mmdb'
     )
+
     assert_equal('Lots of pointers in metadata', reader.metadata.database_type)
     reader.close
   end
@@ -192,6 +195,7 @@ class ReaderTest < Minitest::Test
     reader = MaxMind::DB.new(
       'test/data/test-data/MaxMind-DB-no-ipv4-search-tree.mmdb'
     )
+
     assert_equal('::0/64', reader.get('1.1.1.1'))
     assert_equal('::0/64', reader.get('192.1.1.1'))
     reader.close
@@ -244,7 +248,7 @@ class ReaderTest < Minitest::Test
     e = assert_raises ArgumentError do
       reader.get('not_ip')
     end
-    assert(e.message.include?('invalid address'))
+    assert_includes(e.message, 'invalid address')
     reader.close
   end
 
@@ -252,7 +256,7 @@ class ReaderTest < Minitest::Test
     e = assert_raises SystemCallError do
       MaxMind::DB.new('file-does-not-exist.mmdb')
     end
-    assert(e.message.include?('No such file or directory'))
+    assert_includes(e.message, 'No such file or directory')
   end
 
   def test_nondatabase
@@ -269,14 +273,14 @@ class ReaderTest < Minitest::Test
     e = assert_raises ArgumentError do
       MaxMind::DB.new('README.md', {}, 'blah')
     end
-    assert(e.message.include?('wrong number of arguments'))
+    assert_includes(e.message, 'wrong number of arguments')
   end
 
   def test_no_constructor_args
     e = assert_raises ArgumentError do
       MaxMind::DB.new
     end
-    assert(e.message.include?('wrong number of arguments'))
+    assert_includes(e.message, 'wrong number of arguments')
   end
 
   def test_too_many_get_args
@@ -286,7 +290,7 @@ class ReaderTest < Minitest::Test
     e = assert_raises ArgumentError do
       reader.get('1.1.1.1', 'blah')
     end
-    assert(e.message.include?('wrong number of arguments'))
+    assert_includes(e.message, 'wrong number of arguments')
     reader.close
   end
 
@@ -297,7 +301,7 @@ class ReaderTest < Minitest::Test
     e = assert_raises ArgumentError do
       reader.get
     end
-    assert(e.message.include?('wrong number of arguments'))
+    assert_includes(e.message, 'wrong number of arguments')
     reader.close
   end
 
@@ -308,7 +312,7 @@ class ReaderTest < Minitest::Test
     e = assert_raises ArgumentError do
       reader.metadata('hi')
     end
-    assert(e.message.include?('wrong number of arguments'))
+    assert_includes(e.message, 'wrong number of arguments')
     reader.close
   end
 
@@ -353,6 +357,7 @@ class ReaderTest < Minitest::Test
       'test/data/test-data/MaxMind-DB-test-decoder.mmdb'
     )
     reader.close
+
     assert_equal(
       { 'en' => 'MaxMind DB Decoder Test database - contains every MaxMind DB data type' },
       reader.metadata.description,
@@ -373,7 +378,9 @@ class ReaderTest < Minitest::Test
 
     threads = []
     num_threads.times do |i|
+      # rubocop:disable ThreadSafety/NewThread
       threads << Thread.new do
+        # rubocop:enable ThreadSafety/NewThread
         num_lookups.times do |j|
           thread_lookups[i] << reader.get("65.115.240.#{j}")
           thread_lookups[i] << reader.get("2a02:2770:3::#{j}")
@@ -474,6 +481,7 @@ class ReaderTest < Minitest::Test
   def check_ipv4(reader, filename)
     6.times do |i|
       address = "1.1.1.#{2**i}"
+
       assert_equal(
         { 'ip' => address },
         reader.get(address),
@@ -492,6 +500,7 @@ class ReaderTest < Minitest::Test
     }
     pairs.each do |key_address, value_address|
       data = { 'ip' => value_address }
+
       assert_equal(
         data,
         reader.get(key_address),
@@ -511,6 +520,7 @@ class ReaderTest < Minitest::Test
     subnets = [
       '::1:ffff:ffff', '::2:0:0', '::2:0:40', '::2:0:50', '::2:0:58',
     ]
+
     subnets.each do |address|
       assert_equal(
         { 'ip' => address },
@@ -529,6 +539,7 @@ class ReaderTest < Minitest::Test
       '::2:0:57' => '::2:0:50',
       '::2:0:59' => '::2:0:58',
     }
+
     pairs.each do |key_address, value_address|
       assert_equal(
         { 'ip' => value_address },
