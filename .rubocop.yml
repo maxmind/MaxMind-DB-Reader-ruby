@@ -1,6 +1,7 @@
 plugins:
     - rubocop-minitest
     - rubocop-performance
+    - rubocop-rake
 
 AllCops:
     TargetRubyVersion: '3.2'
