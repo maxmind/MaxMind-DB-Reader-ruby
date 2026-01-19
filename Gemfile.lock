@@ -8,6 +8,7 @@ GEM
   specs:
     ast (2.4.3)
     json (2.18.0)
+    json (2.18.0-java)
     language_server-protocol (3.17.0.5)
     lint_roller (1.1.0)
     minitest (6.0.1)
@@ -18,6 +19,7 @@ GEM
       racc
     prism (1.7.0)
     racc (1.8.1)
+    racc (1.8.1-java)
     rainbow (3.1.1)
     rake (13.3.1)
     regexp_parser (2.11.3)
@@ -56,6 +58,7 @@ GEM
     unicode-emoji (4.2.0)
 
 PLATFORMS
+  java
   ruby
   x86_64-linux
 
