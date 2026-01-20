@@ -32,6 +32,7 @@ fi
 
 check_command perl
 check_command rake
+check_command bundle
 
 # Check that we're not on the main branch
 current_branch=$(git branch --show-current)
@@ -83,6 +84,9 @@ if [ -n "$(git status --porcelain)" ]; then
 fi
 
 perl -pi -e "s/(?<=s.version\s{,20}=\s{,20}\').+?(?=\')/$version/g" maxmind-db.gemspec
+
+# Update version in Gemfile.lock.
+bundle install
 
 echo $"Test results:"
 
