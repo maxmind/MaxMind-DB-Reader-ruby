@@ -1,8 +1,11 @@
 # frozen_string_literal: true
 
 Gem::Specification.new do |s|
+  excluded = Dir['.github/**/*', '.gitignore', '.gitmodules', '.rubocop.yml', 'lychee.toml',
+                 'mise.lock', 'mise.toml', 'bin/**/*', 'CLAUDE.md', 'dev-bin/**/*', 'Gemfile*',
+                 'Rakefile', 'README.dev.md', 'test/**/*', '*.gemspec']
   s.authors     = ['William Storey']
-  s.files       = Dir['**/*'].difference(Dir['.github/**/*', 'bin/**/*', 'CLAUDE.md', 'dev-bin/**/*', 'Gemfile*', 'Rakefile', 'README.dev.md', 'test/**/*', '*.gemspec'])
+  s.files       = IO.popen(%w[git ls-files -z], chdir: __dir__, err: IO::NULL, &:read).split("\x0").difference(excluded)
   s.name        = 'maxmind-db'
   s.summary     = 'A gem for reading MaxMind DB files.'
   s.version     = '1.4.0'
