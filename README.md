@@ -48,7 +48,7 @@ Please report all issues with this code using the [GitHub issue
 tracker](https://github.com/maxmind/MaxMind-DB-Reader-ruby/issues).
 
 If you are having an issue with a MaxMind service that is not specific to the
-client API, please see [our support page](https://www.maxmind.com/en/support).
+client API, please see [our support page](https://support.maxmind.com/knowledge-base).
 
 ## Versioning
 
