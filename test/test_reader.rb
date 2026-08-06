@@ -117,17 +117,17 @@ class ReaderTest < Minitest::Test
       'ip' => '200.0.2.1',
       'file_name' => 'MaxMind-DB-no-ipv4-search-tree.mmdb',
       'expected_prefix_length' => 0,
-      'expected_record' => '::0/64',
+      'expected_record' => '::/64',
     }, {
       'ip' => '::200.0.2.1',
       'file_name' => 'MaxMind-DB-no-ipv4-search-tree.mmdb',
       'expected_prefix_length' => 64,
-      'expected_record' => '::0/64',
+      'expected_record' => '::/64',
     }, {
       'ip' => '0:0:0:0:ffff:ffff:ffff:ffff',
       'file_name' => 'MaxMind-DB-no-ipv4-search-tree.mmdb',
       'expected_prefix_length' => 64,
-      'expected_record' => '::0/64',
+      'expected_record' => '::/64',
     }, {
       'ip' => 'ef00::',
       'file_name' => 'MaxMind-DB-no-ipv4-search-tree.mmdb',
@@ -196,8 +196,8 @@ class ReaderTest < Minitest::Test
       'test/data/test-data/MaxMind-DB-no-ipv4-search-tree.mmdb'
     )
 
-    assert_equal('::0/64', reader.get('1.1.1.1'))
-    assert_equal('::0/64', reader.get('192.1.1.1'))
+    assert_equal('::/64', reader.get('1.1.1.1'))
+    assert_equal('::/64', reader.get('192.1.1.1'))
     reader.close
   end
 
