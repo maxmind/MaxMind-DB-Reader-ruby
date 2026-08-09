@@ -8,8 +8,8 @@ GEM
   specs:
     ast (2.4.3)
     drb (2.2.3)
-    json (2.21.1)
-    json (2.21.1-java)
+    json (2.21.2)
+    json (2.21.2-java)
     language_server-protocol (3.17.0.6)
     lint_roller (1.1.0)
     minitest (6.0.6)
