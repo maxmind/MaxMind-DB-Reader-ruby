@@ -16,8 +16,8 @@ module MaxMind
 
       # Create a +Decoder+.
       #
-      # +io+ is the DB. It must provide a +read+ method. It must be opened in
-      # binary mode.
+      # +io+ is the DB. It must provide +read+ and +getbyte+ methods. It must be
+      # opened in binary mode.
       #
       # +pointer_base+ is the base number to use when decoding a pointer. It is
       # where the data section begins rather than the beginning of the file.
@@ -215,7 +215,7 @@ module MaxMind
         case pointer_size
         when 0
           new_offset = offset + 1
-          pointer = ((size & 0x7) << 8) | @io.read(offset, 1).ord
+          pointer = ((size & 0x7) << 8) | @io.getbyte(offset)
         when 1
           new_offset = offset + 2
           pointer = ((size & 0x7) << 16) | @io.read(offset, 2).unpack1('n')
@@ -298,8 +298,7 @@ module MaxMind
 
       def decode_with_budget(offset, budget)
         new_offset = offset + 1
-        buf = @io.read(offset, 1)
-        ctrl_byte = buf.ord
+        ctrl_byte = @io.getbyte(offset)
         type_num = ctrl_byte >> 5
         type_num, new_offset = read_extended(new_offset) if type_num == 0
 
@@ -310,8 +309,7 @@ module MaxMind
       end
 
       def read_extended(offset)
-        buf = @io.read(offset, 1)
-        next_byte = buf.ord
+        next_byte = @io.getbyte(offset)
         type_num = next_byte + 7
         if type_num < 7
           raise InvalidDatabaseError,
@@ -326,8 +324,7 @@ module MaxMind
         return size, offset if type_num == 1 || size < 29
 
         if size == 29
-          size_bytes = @io.read(offset, 1)
-          size = 29 + size_bytes.ord
+          size = 29 + @io.getbyte(offset)
           return size, offset + 1
         end
 

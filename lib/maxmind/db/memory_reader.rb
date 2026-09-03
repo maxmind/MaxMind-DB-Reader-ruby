@@ -24,6 +24,11 @@ module MaxMind
 
       def close; end
 
+      # Return the byte at +offset+ as an Integer without allocating a String.
+      def getbyte(offset)
+        @buf.getbyte(offset)
+      end
+
       def read(offset, size)
         @buf[offset, size]
       end
