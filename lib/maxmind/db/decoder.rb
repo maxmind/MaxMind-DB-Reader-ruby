@@ -12,7 +12,7 @@ module MaxMind
     #
     # @!visibility private
     class Decoder
-      # rubocop:disable Style/OptionalBooleanParameter
+      # rubocop:disable Style/OptionalBooleanParameter, Metrics/ParameterLists
 
       # Create a +Decoder+.
       #
@@ -25,12 +25,20 @@ module MaxMind
       # section.
       #
       # +pointer_test+ is used for testing pointer code.
-      def initialize(io, pointer_base = 0, pointer_test = false)
+      #
+      # +max_values+, +max_payload_bytes+, and +max_depth+ set the per-decode
+      # limits described below and default to the constants there.
+      def initialize(io, pointer_base = 0, pointer_test = false,
+                     max_values: MAX_VALUES, max_payload_bytes: MAX_BYTES,
+                     max_depth: MAX_DEPTH)
         @io = io
         @pointer_base = pointer_base
         @pointer_test = pointer_test
+        @max_values = max_values
+        @max_payload_bytes = max_payload_bytes
+        @max_depth = max_depth
       end
-      # rubocop:enable Style/OptionalBooleanParameter
+      # rubocop:enable Style/OptionalBooleanParameter, Metrics/ParameterLists
 
       # Per-lookup limits. The value and depth limits are the ones the MaxMind DB
       # specification recommends. The specification leaves the payload limit to
@@ -102,7 +110,7 @@ module MaxMind
 
       def decode_array(size, offset, budget)
         raise_values_exceeded if (budget[0] -= size) < 0
-        raise_depth_exceeded if (budget[1] += 1) > MAX_DEPTH
+        raise_depth_exceeded if (budget[1] += 1) > @max_depth
         array = []
         size.times do
           value, offset = decode_with_budget(offset, budget)
@@ -187,7 +195,7 @@ module MaxMind
       def decode_map(size, offset, budget)
         # A map entry decodes a key and a value, so it costs two values.
         raise_values_exceeded if (budget[0] -= size * 2) < 0
-        raise_depth_exceeded if (budget[1] += 1) > MAX_DEPTH
+        raise_depth_exceeded if (budget[1] += 1) > @max_depth
         container = {}
         size.times do
           key, offset = decode_with_budget(offset, budget)
@@ -224,7 +232,7 @@ module MaxMind
 
         # The value at the pointer's position is already charged by its
         # container, so the target costs nothing more. Only the depth changes.
-        raise_depth_exceeded if (budget[1] += 1) > MAX_DEPTH
+        raise_depth_exceeded if (budget[1] += 1) > @max_depth
         value, = decode_with_budget(pointer, budget)
         budget[1] -= 1
         [value, new_offset]
@@ -276,7 +284,7 @@ module MaxMind
         # pointer cycle on MRI. JRuby can exhaust the stack before the limit is
         # reached and raises a Java StackOverflowError, so catch that too and
         # report the same error.
-        decode_with_budget(offset, [MAX_VALUES - 1, 0, MAX_BYTES])
+        decode_with_budget(offset, [@max_values - 1, 0, @max_payload_bytes])
       rescue *STACK_ERRORS
         raise InvalidDatabaseError,
               'The MaxMind DB file\'s data section exceeds the maximum depth'

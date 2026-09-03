@@ -347,6 +347,33 @@ class ReaderTest < Minitest::Test
     end
   end
 
+  def test_limits_are_configurable
+    # Raising a limit accepts a fixture that the default rejects, for records
+    # and for metadata. Lowering the depth limit rejects an ordinary record. The
+    # metadata nests three deep (a pointer inside the languages array), so a
+    # depth of 3 still opens the database. The record nests deeper.
+    assert_fixture_decodes('decoder-value-limit-over', max_values: 65_537)
+    assert_fixture_decodes('decoder-payload-limit-over', max_payload_bytes: 1 << 22)
+    reader = fixture('metadata-payload-limit', max_payload_bytes: 1 << 22)
+
+    refute_nil(reader.metadata.languages)
+    reader.close
+
+    assert_fixture_rejected(
+      'decoder',
+      'The MaxMind DB file\'s data section exceeds the maximum depth',
+      max_depth: 3,
+    )
+  end
+
+  def test_invalid_limit_raises
+    [0, -1, 1.5, '1', nil].each do |value|
+      assert_raises(ArgumentError, value.inspect) do
+        fixture('decoder', max_values: value)
+      end
+    end
+  end
+
   def test_ip_validation
     reader = MaxMind::DB.new(
       'test/data/test-data/MaxMind-DB-test-decoder.mmdb'

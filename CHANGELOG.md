@@ -14,6 +14,8 @@
     pointer cycles.
   * 2 MiB of string, bytes, and integer payload. The specification leaves this
     limit to the reader. 2 MiB matches libmaxminddb.
+* The decoder limits can be changed with the new `max_values`,
+  `max_payload_bytes`, and `max_depth` options to `MaxMind::DB.new`.
 * Unnecessary files were removed from the published .gem.
 
 ## 1.4.0 (2025-11-20)

@@ -213,6 +213,29 @@ class DecoderTest < Minitest::Test
     )
   end
 
+  def test_integer_payload_is_charged
+    # A variable-length integer charges its declared size against the payload
+    # budget like a string does. A 4-byte uint32 decodes with a 4-byte budget
+    # and is rejected with a 3-byte one; a 16-byte uint128 likewise at 16 and
+    # 15. 0xc4 is uint32 with size 4; 0x10 0x03 is the extended uint128 type
+    # with size 16.
+    message = 'The MaxMind DB file\'s data section exceeds the maximum number of bytes'
+    uint32 = MaxMind::DB::MemoryReader.new("\xc4\x00\x00\x00\x01".b, is_buffer: true)
+    uint128 = MaxMind::DB::MemoryReader.new(
+      "\x10\x03".b + ("\x00".b * 15) + "\x01".b, is_buffer: true
+    )
+
+    assert_equal(1, MaxMind::DB::Decoder.new(uint32, 0, max_payload_bytes: 4).decode(0)[0])
+    assert_equal(1, MaxMind::DB::Decoder.new(uint128, 0, max_payload_bytes: 16).decode(0)[0])
+
+    [[uint32, 3], [uint128, 15]].each do |io, limit|
+      error = assert_raises(MaxMind::DB::InvalidDatabaseError, limit.to_s) do
+        MaxMind::DB::Decoder.new(io, 0, max_payload_bytes: limit).decode(0)
+      end
+      assert_equal(message, error.message)
+    end
+  end
+
   def test_cyclic_pointer_raises
     # A pointer to itself must raise a catchable InvalidDatabaseError rather
     # than recursing until the interpreter's stack overflows.
