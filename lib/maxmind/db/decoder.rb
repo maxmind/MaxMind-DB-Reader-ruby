@@ -209,24 +209,28 @@ module MaxMind
       def decode_pointer(size, offset, budget)
         pointer_size = size >> 3
 
+        # Build the pointer with integer arithmetic. Concatenating the control
+        # bits onto the read bytes and unpacking allocated two extra strings per
+        # pointer, which was a measurable share of a lookup.
         case pointer_size
         when 0
           new_offset = offset + 1
-          buf = (size & 0x7).chr << @io.read(offset, 1)
-          pointer = buf.unpack1('n') + @pointer_base
+          pointer = ((size & 0x7) << 8) | @io.read(offset, 1).ord
         when 1
           new_offset = offset + 2
-          buf = "\x00".b << (size & 0x7).chr << @io.read(offset, 2)
-          pointer = buf.unpack1('N') + 2048 + @pointer_base
+          pointer = ((size & 0x7) << 16) | @io.read(offset, 2).unpack1('n')
+          pointer += 2048
         when 2
           new_offset = offset + 3
-          buf = (size & 0x7).chr << @io.read(offset, 3)
-          pointer = buf.unpack1('N') + 526_336 + @pointer_base
+          buf = @io.read(offset, 3)
+          pointer = ((size & 0x7) << 24) | (buf.getbyte(0) << 16) |
+                    (buf.getbyte(1) << 8) | buf.getbyte(2)
+          pointer += 526_336
         else
           new_offset = offset + 4
-          buf = @io.read(offset, 4)
-          pointer = buf.unpack1('N') + @pointer_base
+          pointer = @io.read(offset, 4).unpack1('N')
         end
+        pointer += @pointer_base
 
         return pointer, new_offset if @pointer_test
 
