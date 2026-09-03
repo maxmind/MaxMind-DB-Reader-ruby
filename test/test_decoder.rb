@@ -5,6 +5,29 @@ require 'minitest/autorun'
 require 'mmdb_util'
 
 class DecoderTest < Minitest::Test
+  class HeaderOnlyReader
+    def initialize(header)
+      @header = header
+    end
+
+    def getbyte(offset)
+      byte = @header.getbyte(offset)
+      raise "The decoder read beyond the header at offset #{offset}" unless byte
+
+      byte
+    end
+
+    def read(offset, size)
+      bytes = @header.byteslice(offset, size)
+      if bytes.nil? || bytes.bytesize != size
+        message = "The decoder read #{size} payload bytes at offset #{offset}"
+        raise message
+      end
+
+      bytes
+    end
+  end
+
   def test_arrays
     arrays = {
       "\x00\x04".b => [],
@@ -127,6 +150,155 @@ class DecoderTest < Minitest::Test
       "\x38\xff\xff\xff\xff".b => 4_294_967_295,
     }
     validate_type_decoding('pointers', pointers)
+  end
+
+  def encode_pointer1(target)
+    # One-byte-payload pointer (type 1, pointer_size 0) with base 0.
+    [(1 << 5) | ((target >> 8) & 0x7), target & 0xFF].pack('C*').b
+  end
+
+  def nested_pointer_chain(depth)
+    buf = "\xa0".b
+    offset = 0
+    depth.times do
+      pointer_offset = buf.bytesize
+      buf += encode_pointer1(offset)
+      offset = pointer_offset
+    end
+
+    [MaxMind::DB::MemoryReader.new(buf, is_buffer: true), offset]
+  end
+
+  def test_pointer_fan_out_is_bounded
+    # A data section of nested arrays, each holding two pointers to the node
+    # below, would cost 2**depth decode operations. The decoder bounds the
+    # number of values it decodes per lookup and rejects the database.
+    depth = 100
+    buf = "\xa0".b # leaf: uint16 with value 0
+    prev = 0
+    depth.times do
+      offset = buf.bytesize
+      buf += "\x02\x04".b + encode_pointer1(prev) + encode_pointer1(prev)
+      prev = offset
+    end
+
+    io = MaxMind::DB::MemoryReader.new(buf, is_buffer: true)
+    assert_raises(MaxMind::DB::InvalidDatabaseError) do
+      MaxMind::DB::Decoder.new(io, 0).decode(prev)
+    end
+  end
+
+  def scalar_pointer_array(pointer_count)
+    # A uint16 leaf at offset 0 and, at offset 1, an array of pointers to it.
+    array_header = [0x1e, 4, pointer_count - 285].pack('CCn')
+    array = array_header + (encode_pointer1(0) * pointer_count)
+    MaxMind::DB::MemoryReader.new("\xa0".b + array, is_buffer: true)
+  end
+
+  def test_value_limit_follows_the_flat_rule
+    # The specification charges the root as one value and each pointer as the
+    # value it resolves to, not as a separate value. An array of 65,535
+    # pointers to a scalar is therefore 65,536 values, exactly the limit, and
+    # decodes. One more pointer exceeds it.
+    decoded, = MaxMind::DB::Decoder.new(scalar_pointer_array(65_535), 0).decode(1)
+
+    assert_equal(65_535, decoded.length)
+
+    error = assert_raises(MaxMind::DB::InvalidDatabaseError) do
+      MaxMind::DB::Decoder.new(scalar_pointer_array(65_536), 0).decode(1)
+    end
+    assert_equal(
+      'The MaxMind DB file\'s data section exceeds the maximum number of values',
+      error.message
+    )
+  end
+
+  def test_cyclic_pointer_raises
+    # A pointer to itself must raise a catchable InvalidDatabaseError rather
+    # than recursing until the interpreter's stack overflows.
+    io = MaxMind::DB::MemoryReader.new("\x20\x00".b, is_buffer: true)
+    assert_raises(MaxMind::DB::InvalidDatabaseError) do
+      MaxMind::DB::Decoder.new(io, 0).decode(0)
+    end
+  end
+
+  def test_default_depth_limit_boundary
+    # Each array or followed pointer adds one level. Exactly 512 levels must
+    # decode, while 513 must be rejected.
+    arrays = lambda do |depth|
+      buf = ("\x01\x04".b * depth) + "\xa0".b
+      [MaxMind::DB::MemoryReader.new(buf, is_buffer: true), 0]
+    end
+    structures = {
+      'nested arrays' => arrays,
+      'nested pointers' => method(:nested_pointer_chain),
+    }
+
+    structures.each do |name, build|
+      io, offset = build.call(512)
+      decoded, = MaxMind::DB::Decoder.new(io, 0).decode(offset)
+      512.times { decoded = decoded.fetch(0) } if name == 'nested arrays'
+
+      assert_equal(0, decoded, name)
+
+      io, offset = build.call(513)
+      error = assert_raises(MaxMind::DB::InvalidDatabaseError, name) do
+        MaxMind::DB::Decoder.new(io, 0).decode(offset)
+      end
+      assert_equal(
+        'The MaxMind DB file\'s data section exceeds the maximum depth',
+        error.message,
+        name
+      )
+    end
+  end
+
+  def test_oversized_payload_is_rejected_before_read
+    # Each header declares a two-byte payload, but the reader contains only the
+    # header and raises if the decoder tries to copy the missing payload.
+    headers = {
+      'UTF-8 string' => "\x42".b,
+      'bytes' => "\x82".b,
+    }
+
+    headers.each do |name, header|
+      io = HeaderOnlyReader.new(header)
+      error = assert_raises(MaxMind::DB::InvalidDatabaseError, name) do
+        MaxMind::DB::Decoder.new(io, 0, max_payload_bytes: 1).decode(0)
+      end
+      assert_equal(
+        'The MaxMind DB file\'s data section exceeds the maximum number of bytes',
+        error.message,
+        name
+      )
+    end
+  end
+
+  def test_oversized_array_is_bounded
+    # An array that declares 65,536 children contains 65,537 total values with
+    # the array itself, so it exceeds the 65,536-value limit. The reader holds
+    # only the header and raises if the decoder tries to read a child. 0x1e 0x04
+    # selects an array with size code 30; 0xfee3 encodes 65,536 - 285.
+    io = HeaderOnlyReader.new("\x1e\x04\xfe\xe3".b)
+    error = assert_raises(MaxMind::DB::InvalidDatabaseError) do
+      MaxMind::DB::Decoder.new(io, 0).decode(0)
+    end
+    assert_equal(
+      'The MaxMind DB file\'s data section exceeds the maximum number of values',
+      error.message
+    )
+  end
+
+  def test_oversized_map_is_bounded
+    # A map entry decodes a key and a value, so a map of N entries costs 2N
+    # children. A map that declares 32,769 entries has 65,538 children and
+    # 65,539 total values including the map itself, just past the 65,536 limit,
+    # and is rejected before any entry is read. 0xfe is a map with size code
+    # 30, then the two size bytes for 32,769 - 285 = 32,484 (0x7ee4).
+    io = MaxMind::DB::MemoryReader.new("\xfe\x7e\xe4".b, is_buffer: true)
+    assert_raises(MaxMind::DB::InvalidDatabaseError) do
+      MaxMind::DB::Decoder.new(io, 0).decode(0)
+    end
   end
 
   # rubocop:disable-next Style/ClassVars

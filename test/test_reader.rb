@@ -241,6 +241,112 @@ class ReaderTest < Minitest::Test
     reader.close
   end
 
+  LIMIT_MODES = [MaxMind::DB::MODE_FILE, MaxMind::DB::MODE_MEMORY].freeze
+
+  def fixture(name, **)
+    MaxMind::DB.new("test/data/test-data/MaxMind-DB-test-#{name}.mmdb", **)
+  end
+
+  def assert_fixture_rejected(name, message = nil, **options)
+    LIMIT_MODES.each do |mode|
+      reader = fixture(name, mode: mode, **options)
+      error = assert_raises(MaxMind::DB::InvalidDatabaseError, "#{name} (#{mode})") do
+        reader.get('1.1.1.1')
+      end
+      assert_equal(message, error.message, "#{name} (#{mode})") if message
+      reader.close
+    end
+  end
+
+  def assert_fixture_decodes(name, **options)
+    LIMIT_MODES.each do |mode|
+      reader = fixture(name, mode: mode, **options)
+
+      refute_nil(reader.get('1.1.1.1'), "#{name} (#{mode})")
+      reader.close
+    end
+  end
+
+  def test_pointer_fan_out_is_bounded
+    # Each record is a depth-40 pointer fan-out. An unprotected decoder performs
+    # 2**40 leaf decodes from a few hundred bytes.
+    assert_fixture_rejected('pointer-decoder-dos')
+    LIMIT_MODES.each do |mode|
+      reader = fixture('pointer-decoder-dos-ipv6', mode: mode)
+
+      assert_raises(MaxMind::DB::InvalidDatabaseError, mode.to_s) { reader.get('::1') }
+      reader.close
+    end
+  end
+
+  def test_limit_budget_is_local_to_each_lookup
+    # The at-limit fixtures leave no budget to spare. If the budget lived on
+    # the shared decoder instead of in each call, a second lookup on the same
+    # reader would fail, and concurrent lookups would corrupt each other's
+    # counts. Every lookup here must decode.
+    %w[decoder-value-limit decoder-payload-limit].each do |name|
+      LIMIT_MODES.each do |mode|
+        reader = fixture(name, mode: mode)
+        threads = Array.new(4) do
+          # rubocop:disable-next ThreadSafety/NewThread
+          Thread.new do
+            5.times { refute_nil(reader.get('1.1.1.1'), "#{name} (#{mode})") }
+          end
+        end
+        threads.each(&:join)
+        reader.close
+      end
+    end
+  end
+
+  def test_value_count_boundary
+    # The at-limit fixture decodes to exactly 65,536 values under the flat rule
+    # and must decode. One more value must be rejected. The pointer-heavy
+    # fixture reaches 65,535 values through pointers, which cost nothing beyond
+    # the values they resolve to, so it must decode too.
+    assert_fixture_decodes('decoder-value-limit')
+    assert_fixture_decodes('decoder-value-limit-pointer-heavy')
+    assert_fixture_rejected(
+      'decoder-value-limit-over',
+      'The MaxMind DB file\'s data section exceeds the maximum number of values',
+    )
+  end
+
+  def test_payload_amplification_is_bounded
+    # Each record points many times at one large string or bytes value.
+    # Following each pointer would copy the target again, so a reader that
+    # materializes every occurrence produces far more data than the file holds.
+    # The -worst-case fixture stays at exactly the value limit, so only the
+    # payload byte budget stops it.
+    message = 'The MaxMind DB file\'s data section exceeds the maximum number of bytes'
+
+    assert_fixture_rejected('payload-amplification-dos', message)
+    assert_fixture_rejected('payload-amplification-dos-string', message)
+    assert_fixture_rejected('payload-amplification-dos-worst-case', message)
+  end
+
+  def test_payload_byte_budget_boundary
+    # The at-limit fixture materializes exactly 2 MiB of payload and must
+    # decode. The over-limit fixture holds one byte more and must be rejected,
+    # so an off-by-one in the byte budget is caught.
+    assert_fixture_decodes('decoder-payload-limit')
+    assert_fixture_rejected(
+      'decoder-payload-limit-over',
+      'The MaxMind DB file\'s data section exceeds the maximum number of bytes',
+    )
+  end
+
+  def test_metadata_payload_amplification_is_bounded
+    # The languages metadata array points many times at one large string.
+    # Opening the database decodes the metadata, so the same budget must reject
+    # it there rather than materialize the amplified payload.
+    LIMIT_MODES.each do |mode|
+      assert_raises(MaxMind::DB::InvalidDatabaseError, mode.to_s) do
+        fixture('metadata-payload-limit', mode: mode)
+      end
+    end
+  end
+
   def test_ip_validation
     reader = MaxMind::DB.new(
       'test/data/test-data/MaxMind-DB-test-decoder.mmdb'
