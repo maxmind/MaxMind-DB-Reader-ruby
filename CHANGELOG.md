@@ -16,6 +16,9 @@
     limit to the reader. 2 MiB matches libmaxminddb.
 * The decoder limits can be changed with the new `max_values`,
   `max_payload_bytes`, and `max_depth` options to `MaxMind::DB.new`.
+* Lookups are faster. The decoder allocates fewer strings and dispatches on the
+  data type with a jump table. GeoLite City lookups in memory mode on CRuby
+  3.4 are about 18% faster than in 1.4.0.
 * Unnecessary files were removed from the published .gem.
 
 ## 1.4.0 (2025-11-20)

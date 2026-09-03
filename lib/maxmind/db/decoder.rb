@@ -252,23 +252,6 @@ module MaxMind
         [buf, new_offset]
       end
 
-      TYPE_DECODER = {
-        1 => :decode_pointer,
-        2 => :decode_utf8_string,
-        3 => :decode_double,
-        4 => :decode_bytes,
-        5 => :decode_uint16,
-        6 => :decode_uint32,
-        7 => :decode_map,
-        8 => :decode_int32,
-        9 => :decode_uint64,
-        10 => :decode_uint128,
-        11 => :decode_array,
-        14 => :decode_boolean,
-        15 => :decode_float,
-      }.freeze
-      private_constant :TYPE_DECODER
-
       public
 
       # Decode a section of the data section starting at +offset+.
@@ -296,6 +279,10 @@ module MaxMind
 
       private
 
+      # The dispatch below is one branch per data type, so the method's
+      # cyclomatic complexity is above the cop's default. It is inlined here
+      # for speed and the branches are uniform.
+      # rubocop:disable-next Metrics/CyclomaticComplexity
       def decode_with_budget(offset, budget)
         new_offset = offset + 1
         ctrl_byte = @io.getbyte(offset)
@@ -303,9 +290,26 @@ module MaxMind
         type_num, new_offset = read_extended(new_offset) if type_num == 0
 
         size, new_offset = size_from_ctrl_byte(ctrl_byte, new_offset, type_num)
-        # We could check an element exists at `type_num', but for performance I
-        # don't.
-        send(TYPE_DECODER[type_num], size, new_offset, budget)
+        # A case on Integer literals compiles to a jump table, which is faster
+        # than looking the method up in a Hash and calling it with send.
+        case type_num
+        when 1 then decode_pointer(size, new_offset, budget)
+        when 2 then decode_utf8_string(size, new_offset, budget)
+        when 3 then decode_double(size, new_offset, budget)
+        when 4 then decode_bytes(size, new_offset, budget)
+        when 5 then decode_uint16(size, new_offset, budget)
+        when 6 then decode_uint32(size, new_offset, budget)
+        when 7 then decode_map(size, new_offset, budget)
+        when 8 then decode_int32(size, new_offset, budget)
+        when 9 then decode_uint64(size, new_offset, budget)
+        when 10 then decode_uint128(size, new_offset, budget)
+        when 11 then decode_array(size, new_offset, budget)
+        when 14 then decode_boolean(size, new_offset, budget)
+        when 15 then decode_float(size, new_offset, budget)
+        else
+          raise InvalidDatabaseError,
+                "The MaxMind DB file's data section contains bad data (unknown data type #{type_num})"
+        end
       end
 
       def read_extended(offset)

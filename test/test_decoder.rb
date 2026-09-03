@@ -236,6 +236,19 @@ class DecoderTest < Minitest::Test
     end
   end
 
+  def test_unknown_type_raises
+    # An extended type byte selects type 7 + its value. 0x10 gives type 23,
+    # which the format does not define; the deprecated end marker is type 13.
+    # Both must raise InvalidDatabaseError rather than fail inside the dispatch.
+    ["\x00\x10".b, "\x00\x06".b].each do |buf|
+      io = MaxMind::DB::MemoryReader.new(buf, is_buffer: true)
+      error = assert_raises(MaxMind::DB::InvalidDatabaseError, buf.inspect) do
+        MaxMind::DB::Decoder.new(io, 0).decode(0)
+      end
+      assert_match(/unknown data type/, error.message)
+    end
+  end
+
   def test_cyclic_pointer_raises
     # A pointer to itself must raise a catchable InvalidDatabaseError rather
     # than recursing until the interpreter's stack overflows.
