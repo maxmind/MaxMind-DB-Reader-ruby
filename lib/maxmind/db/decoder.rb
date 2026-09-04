@@ -211,7 +211,7 @@ module MaxMind
         [container, offset]
       end
 
-      def decode_pointer(size, offset, budget)
+      def decode_pointer(size, offset)
         pointer_size = size >> 3
 
         # Build the pointer with integer arithmetic. Concatenating the control
@@ -236,15 +236,7 @@ module MaxMind
           pointer = @io.read(offset, 4).unpack1('N')
         end
         pointer += @pointer_base
-
-        return pointer, new_offset if @pointer_test
-
-        # The value at the pointer's position is already charged by its
-        # container, so the target costs nothing more. Only the depth changes.
-        raise_depth_exceeded if (budget[BUDGET_DEPTH] += 1) > @max_depth
-        value, = decode_with_budget(pointer, budget)
-        budget[BUDGET_DEPTH] -= 1
-        [value, new_offset]
+        [pointer, new_offset]
       end
 
       def decode_utf8_string(size, offset, budget)
@@ -287,34 +279,55 @@ module MaxMind
       # The dispatch below is one branch per data type, so the method's
       # cyclomatic complexity is above the cop's default. It is inlined here
       # for speed and the branches are uniform.
-      # rubocop:disable-next Metrics/CyclomaticComplexity
+      # rubocop:disable-next Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
       def decode_with_budget(offset, budget)
+        pointer_return_offset = nil
         new_offset = offset + 1
         ctrl_byte = @io.getbyte(offset)
         type_num = ctrl_byte >> 5
         type_num, new_offset = read_extended(new_offset) if type_num == 0
 
         size, new_offset = size_from_ctrl_byte(ctrl_byte, new_offset, type_num)
+        if type_num == 1
+          pointer, pointer_return_offset = decode_pointer(size, new_offset)
+          return [pointer, pointer_return_offset] if @pointer_test
+
+          raise_depth_exceeded if (budget[BUDGET_DEPTH] += 1) > @max_depth
+          new_offset = pointer + 1
+          ctrl_byte = @io.getbyte(pointer)
+          type_num = ctrl_byte >> 5
+          if type_num == 1
+            raise InvalidDatabaseError,
+                  'The MaxMind DB file\'s data section contains bad data (pointer points to another pointer)'
+          end
+          type_num, new_offset = read_extended(new_offset) if type_num == 0
+          size, new_offset = size_from_ctrl_byte(ctrl_byte, new_offset, type_num)
+        end
+
         # A case on Integer literals compiles to a jump table, which is faster
         # than looking the method up in a Hash and calling it with send.
-        case type_num
-        when 1 then decode_pointer(size, new_offset, budget)
-        when 2 then decode_utf8_string(size, new_offset, budget)
-        when 3 then decode_double(size, new_offset)
-        when 4 then decode_bytes(size, new_offset, budget)
-        when 5 then decode_uint16(size, new_offset, budget)
-        when 6 then decode_uint32(size, new_offset, budget)
-        when 7 then decode_map(size, new_offset, budget)
-        when 8 then decode_int32(size, new_offset, budget)
-        when 9 then decode_uint64(size, new_offset, budget)
-        when 10 then decode_uint128(size, new_offset, budget)
-        when 11 then decode_array(size, new_offset, budget)
-        when 14 then decode_boolean(size, new_offset)
-        when 15 then decode_float(size, new_offset)
-        else
-          raise InvalidDatabaseError,
-                "The MaxMind DB file's data section contains bad data (unknown data type #{type_num})"
-        end
+        result = case type_num
+                 when 2 then decode_utf8_string(size, new_offset, budget)
+                 when 3 then decode_double(size, new_offset)
+                 when 4 then decode_bytes(size, new_offset, budget)
+                 when 5 then decode_uint16(size, new_offset, budget)
+                 when 6 then decode_uint32(size, new_offset, budget)
+                 when 7 then decode_map(size, new_offset, budget)
+                 when 8 then decode_int32(size, new_offset, budget)
+                 when 9 then decode_uint64(size, new_offset, budget)
+                 when 10 then decode_uint128(size, new_offset, budget)
+                 when 11 then decode_array(size, new_offset, budget)
+                 when 14 then decode_boolean(size, new_offset)
+                 when 15 then decode_float(size, new_offset)
+                 else
+                   raise InvalidDatabaseError,
+                         "The MaxMind DB file's data section contains bad data (unknown data type #{type_num})"
+                 end
+        return result unless pointer_return_offset
+
+        budget[BUDGET_DEPTH] -= 1
+        result[1] = pointer_return_offset
+        result
       end
 
       def read_extended(offset)

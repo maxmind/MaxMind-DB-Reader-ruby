@@ -157,18 +157,6 @@ class DecoderTest < Minitest::Test
     [(1 << 5) | ((target >> 8) & 0x7), target & 0xFF].pack('C*').b
   end
 
-  def nested_pointer_chain(depth)
-    buf = "\xa0".b
-    offset = 0
-    depth.times do
-      pointer_offset = buf.bytesize
-      buf += encode_pointer1(offset)
-      offset = pointer_offset
-    end
-
-    [MaxMind::DB::MemoryReader.new(buf, is_buffer: true), offset]
-  end
-
   def test_pointer_fan_out_is_bounded
     # A data section of nested arrays, each holding two pointers to the node
     # below, would cost 2**depth decode operations. The decoder bounds the
@@ -249,44 +237,44 @@ class DecoderTest < Minitest::Test
     end
   end
 
+  def test_pointer_to_pointer_raises
+    # The specification forbids a pointer from targeting another pointer.
+    io = MaxMind::DB::MemoryReader.new("\x20\x02\x20\x02".b, is_buffer: true)
+    error = assert_raises(MaxMind::DB::InvalidDatabaseError) do
+      MaxMind::DB::Decoder.new(io, 0).decode(0)
+    end
+    assert_equal(
+      'The MaxMind DB file\'s data section contains bad data (pointer points to another pointer)',
+      error.message
+    )
+  end
+
   def test_cyclic_pointer_raises
-    # A pointer to itself must raise a catchable InvalidDatabaseError rather
-    # than recursing until the interpreter's stack overflows.
-    io = MaxMind::DB::MemoryReader.new("\x20\x00".b, is_buffer: true)
+    # An array that contains a pointer back to itself is a legal pointer target
+    # but must still be stopped by the depth limit.
+    io = MaxMind::DB::MemoryReader.new("\x01\x04\x20\x00".b, is_buffer: true)
     assert_raises(MaxMind::DB::InvalidDatabaseError) do
       MaxMind::DB::Decoder.new(io, 0).decode(0)
     end
   end
 
   def test_default_depth_limit_boundary
-    # Each array or followed pointer adds one level. Exactly 512 levels must
-    # decode, while 513 must be rejected.
-    arrays = lambda do |depth|
-      buf = ("\x01\x04".b * depth) + "\xa0".b
-      [MaxMind::DB::MemoryReader.new(buf, is_buffer: true), 0]
+    # Each array adds one level. Exactly 512 levels must decode, while 513 must
+    # be rejected.
+    io = MaxMind::DB::MemoryReader.new(("\x01\x04".b * 512) + "\xa0".b, is_buffer: true)
+    decoded, = MaxMind::DB::Decoder.new(io, 0).decode(0)
+    512.times { decoded = decoded.fetch(0) }
+
+    assert_equal(0, decoded)
+
+    io = MaxMind::DB::MemoryReader.new(("\x01\x04".b * 513) + "\xa0".b, is_buffer: true)
+    error = assert_raises(MaxMind::DB::InvalidDatabaseError) do
+      MaxMind::DB::Decoder.new(io, 0).decode(0)
     end
-    structures = {
-      'nested arrays' => arrays,
-      'nested pointers' => method(:nested_pointer_chain),
-    }
-
-    structures.each do |name, build|
-      io, offset = build.call(512)
-      decoded, = MaxMind::DB::Decoder.new(io, 0).decode(offset)
-      512.times { decoded = decoded.fetch(0) } if name == 'nested arrays'
-
-      assert_equal(0, decoded, name)
-
-      io, offset = build.call(513)
-      error = assert_raises(MaxMind::DB::InvalidDatabaseError, name) do
-        MaxMind::DB::Decoder.new(io, 0).decode(offset)
-      end
-      assert_equal(
-        'The MaxMind DB file\'s data section exceeds the maximum depth',
-        error.message,
-        name
-      )
-    end
+    assert_equal(
+      'The MaxMind DB file\'s data section exceeds the maximum depth',
+      error.message
+    )
   end
 
   def test_oversized_payload_is_rejected_before_read
