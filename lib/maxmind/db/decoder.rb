@@ -125,7 +125,7 @@ module MaxMind
         [array, offset]
       end
 
-      def decode_boolean(size, offset, _budget)
+      def decode_boolean(size, offset)
         [size != 0, offset]
       end
 
@@ -134,13 +134,13 @@ module MaxMind
         [@io.read(offset, size), offset + size]
       end
 
-      def decode_double(size, offset, _budget)
+      def decode_double(size, offset)
         verify_size(8, size)
         buf = @io.read(offset, 8)
         [buf.unpack1('G'), offset + 8]
       end
 
-      def decode_float(size, offset, _budget)
+      def decode_float(size, offset)
         verify_size(4, size)
         buf = @io.read(offset, 4)
         [buf.unpack1('g'), offset + 4]
@@ -300,7 +300,7 @@ module MaxMind
         case type_num
         when 1 then decode_pointer(size, new_offset, budget)
         when 2 then decode_utf8_string(size, new_offset, budget)
-        when 3 then decode_double(size, new_offset, budget)
+        when 3 then decode_double(size, new_offset)
         when 4 then decode_bytes(size, new_offset, budget)
         when 5 then decode_uint16(size, new_offset, budget)
         when 6 then decode_uint32(size, new_offset, budget)
@@ -309,8 +309,8 @@ module MaxMind
         when 9 then decode_uint64(size, new_offset, budget)
         when 10 then decode_uint128(size, new_offset, budget)
         when 11 then decode_array(size, new_offset, budget)
-        when 14 then decode_boolean(size, new_offset, budget)
-        when 15 then decode_float(size, new_offset, budget)
+        when 14 then decode_boolean(size, new_offset)
+        when 15 then decode_float(size, new_offset)
         else
           raise InvalidDatabaseError,
                 "The MaxMind DB file's data section contains bad data (unknown data type #{type_num})"
