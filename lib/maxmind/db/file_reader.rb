@@ -44,6 +44,11 @@ module MaxMind
         @fh.close
       end
 
+      # Return the byte at +offset+ as an Integer.
+      def getbyte(offset)
+        read(offset, 1).ord
+      end
+
       def read(offset, size)
         return ''.b if size == 0
 

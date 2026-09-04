@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'maxmind/db/errors'
+
 module MaxMind
   class DB
     # @!visibility private
@@ -24,8 +26,23 @@ module MaxMind
 
       def close; end
 
+      # Return the byte at +offset+ as an Integer without allocating a String.
+      def getbyte(offset)
+        @buf.getbyte(offset) || raise_bad_data
+      end
+
       def read(offset, size)
-        @buf[offset, size]
+        return ''.b if size == 0
+
+        raise_bad_data if offset + size > @buf.length
+
+        @buf.byteslice(offset, size)
+      end
+
+      private
+
+      def raise_bad_data
+        raise InvalidDatabaseError, 'The MaxMind DB file contains bad data'
       end
     end
   end

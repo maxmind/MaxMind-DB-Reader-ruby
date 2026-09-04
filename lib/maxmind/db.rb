@@ -72,7 +72,7 @@ module MaxMind
     # @param database [String] a path to a {MaxMind
     #   DB}[https://maxmind.github.io/MaxMind-DB/].
     #
-    # @param options [Hash<Symbol, Symbol>] options controlling the behavior of
+    # @param options [Hash<Symbol, Object>] options controlling the behavior of
     #   the DB.
     #
     # @option options [Symbol] :mode Defines how to open the database. It may
@@ -80,11 +80,27 @@ module MaxMind
     #   one, DB uses MODE_AUTO. Refer to the definition of those constants for
     #   an explanation of their meaning.
     #
-    # @raise [InvalidDatabaseError] if the database is corrupt or invalid.
+    # @option options [Integer] :max_values The maximum number of values a
+    #   single record, or the metadata, may decode to. The default is 65,536.
+    #   The largest records MaxMind produces decode to a few hundred values.
     #
-    # @raise [ArgumentError] if the mode is invalid.
+    # @option options [Integer] :max_payload_bytes The maximum total size in
+    #   bytes of the strings, bytes, and integers a single record, or the
+    #   metadata, may decode. The default is 2 MiB. The largest records MaxMind
+    #   produces hold about a kilobyte.
+    #
+    # @option options [Integer] :max_depth The maximum nesting depth of maps,
+    #   arrays, and pointers in a single record, or the metadata. The default
+    #   is 512.
+    #
+    # @raise [InvalidDatabaseError] if the database is corrupt or invalid. A
+    #   database that exceeds any of the limits above raises this error from
+    #   the lookup, or from this constructor if the metadata exceeds them.
+    #
+    # @raise [ArgumentError] if the mode or a limit is invalid.
     def initialize(database, options = {})
       options[:mode] = MODE_AUTO unless options.key?(:mode)
+      limits = decoder_limits(options)
 
       case options[:mode]
       when MODE_AUTO, MODE_FILE
@@ -101,11 +117,11 @@ module MaxMind
         @size = @io.size
 
         metadata_start = find_metadata_start
-        metadata_decoder = Decoder.new(@io, metadata_start)
+        metadata_decoder = Decoder.new(@io, metadata_start, **limits)
         metadata_map, = metadata_decoder.decode(metadata_start)
         @metadata = Metadata.new(metadata_map)
         @decoder = Decoder.new(@io, @metadata.search_tree_size +
-                               DATA_SECTION_SEPARATOR_SIZE)
+                               DATA_SECTION_SEPARATOR_SIZE, **limits)
 
         # Store copies as instance variables to reduce method calls.
         @ip_version       = @metadata.ip_version
@@ -269,6 +285,24 @@ module MaxMind
 
       data, = @decoder.decode(offset_in_file)
       data
+    end
+
+    LIMIT_OPTIONS = %i[max_values max_payload_bytes max_depth].freeze
+    private_constant :LIMIT_OPTIONS
+
+    # Return the decoder limits given in +options+ as keyword arguments for
+    # Decoder.new. An absent option keeps the decoder's default.
+    def decoder_limits(options)
+      limits = {}
+      LIMIT_OPTIONS.each do |name|
+        next unless options.key?(name)
+
+        value = options[name]
+        raise ArgumentError, "#{name} must be a positive integer" unless value.is_a?(Integer) && value.positive?
+
+        limits[name] = value
+      end
+      limits
     end
 
     def find_metadata_start

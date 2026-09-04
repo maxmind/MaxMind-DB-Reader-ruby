@@ -2,6 +2,25 @@
 
 ## 1.5.0
 
+* Fixed two denial-of-service issues in the decoder. A crafted database could
+  nest data-section pointers to shared targets so that decoding one record
+  cost exponential time and memory from a small file, or point many times at
+  one large string or bytes value so that a record with few values
+  materialized gigabytes. The decoder now bounds each record it decodes and
+  the metadata decoded when a database is opened. A database that exceeds a
+  limit raises `InvalidDatabaseError`. The limits are:
+  * 65,536 decoded values, as the MaxMind DB specification recommends.
+  * 512 levels of nesting, as the specification recommends. This also stops
+    pointer cycles.
+  * 2 MiB of string, bytes, and integer payload. The specification leaves this
+    limit to the reader. 2 MiB matches libmaxminddb.
+* The decoder limits can be changed with the new `max_values`,
+  `max_payload_bytes`, and `max_depth` options to `MaxMind::DB.new`.
+* Pointers that target other pointers are now rejected as invalid, as required
+  by the MaxMind DB specification.
+* Lookups are faster. The decoder allocates fewer strings and dispatches on the
+  data type with a jump table. GeoLite City lookups in memory mode on CRuby
+  3.4 are about 18% faster than in 1.4.0.
 * Unnecessary files were removed from the published .gem.
 
 ## 1.4.0 (2025-11-20)
