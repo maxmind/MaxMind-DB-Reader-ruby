@@ -361,7 +361,7 @@ class DecoderTest < Minitest::Test
     # 65,539 total values including the map itself, just past the 65,536 limit,
     # and is rejected before any entry is read. 0xfe is a map with size code
     # 30, then the two size bytes for 32,769 - 285 = 32,484 (0x7ee4).
-    io = MaxMind::DB::MemoryReader.new("\xfe\x7e\xe4".b, is_buffer: true)
+    io = HeaderOnlyReader.new("\xfe\x7e\xe4".b)
     assert_raises(MaxMind::DB::InvalidDatabaseError) do
       MaxMind::DB::Decoder.new(io, 0).decode(0)
     end
