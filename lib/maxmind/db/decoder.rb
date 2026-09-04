@@ -40,7 +40,7 @@ module MaxMind
       end
       # rubocop:enable Style/OptionalBooleanParameter, Metrics/ParameterLists
 
-      # Per-lookup limits. The value and depth limits are the ones the MaxMind DB
+      # Per-decode limits. The value and depth limits are the ones the MaxMind DB
       # specification recommends. The specification leaves the payload limit to
       # the reader, and 2 MiB matches libmaxminddb. +budget+ is a three-element
       # array, [values_remaining, depth, bytes_remaining], shared across the
@@ -48,12 +48,12 @@ module MaxMind
       # decoder safe for concurrent reads.
       #
       # The value limit stops a pointer fan-out. It follows the specification's
-      # flat rule: the root is one value, each array and map subtracts its
-      # declared value count before iterating, and a pointer costs nothing
-      # beyond the value it resolves to, which its container already charged. A
-      # re-decoded node drains the budget, and an oversized declared size is
-      # rejected before the loop reads anything. The largest real records decode
-      # a few hundred values.
+      # flat rule: the root is one value, each array reserves one value per
+      # element, and each map reserves two values per entry before iterating. A
+      # pointer is not charged separately from the logical value at the root or
+      # its position in a container. A re-decoded node drains the budget, and an
+      # oversized declared size is rejected before the loop reads anything. The
+      # largest real records decode a few hundred values.
       #
       # The byte limit stops payload amplification: a crafted database can point
       # many times at one large string or bytes value, so a bounded value count
@@ -91,9 +91,8 @@ module MaxMind
 
       private
 
-      # The limit checks are inlined at each call site rather than wrapped in a
-      # helper. A method call per container or pointer costs about 5% of a
-      # lookup in the interpreter; only the raise is factored out.
+      # The limit checks are inlined at each call site so containers and
+      # pointers do not add a helper call. Only the raise is factored out.
       def raise_depth_exceeded
         raise InvalidDatabaseError,
               'The MaxMind DB file\'s data section exceeds the maximum depth'
@@ -214,9 +213,8 @@ module MaxMind
       def decode_pointer(size, offset)
         pointer_size = size >> 3
 
-        # Build the pointer with integer arithmetic. Concatenating the control
-        # bits onto the read bytes and unpacking allocated two extra strings per
-        # pointer, which was a measurable share of a lookup.
+        # Build the pointer with integer arithmetic to avoid temporary strings
+        # when combining control bits with the payload bytes.
         case pointer_size
         when 0
           new_offset = offset + 1
@@ -260,9 +258,9 @@ module MaxMind
       #
       # Throws an exception if there is an error.
       def decode(offset)
-        # Bound the work per lookup so a crafted database cannot exhaust CPU or
+        # Bound the work per decode so a crafted database cannot exhaust CPU or
         # memory. +budget+ carries the remaining value count, the current depth,
-        # and the remaining string and bytes payload, and is call-local, which
+        # and the remaining payload-byte allowance, and is call-local, which
         # keeps the decoder safe for concurrent reads. The root value is charged
         # here; containers charge their children. The depth limit catches a
         # pointer cycle on MRI. JRuby can exhaust the stack before the limit is
@@ -292,6 +290,10 @@ module MaxMind
           pointer, pointer_return_offset = decode_pointer(size, new_offset)
           return [pointer, pointer_return_offset] if @pointer_test
 
+          # The root or containing collection already charged the logical value
+          # at the pointer's position. Following it adds depth but no separate
+          # value. Its target cannot be another pointer, and decoding the target
+          # still reserves container children and charges payload bytes.
           raise_depth_exceeded if (budget[BUDGET_DEPTH] += 1) > @max_depth
           new_offset = pointer + 1
           ctrl_byte = @io.getbyte(pointer)
@@ -304,8 +306,8 @@ module MaxMind
           size, new_offset = size_from_ctrl_byte(ctrl_byte, new_offset, type_num)
         end
 
-        # A case on Integer literals compiles to a jump table, which is faster
-        # than looking the method up in a Hash and calling it with send.
+        # Direct case dispatch avoids looking the method up in a Hash and
+        # calling it with send.
         result = case type_num
                  when 2 then decode_utf8_string(size, new_offset, budget)
                  when 3 then decode_double(size, new_offset)
