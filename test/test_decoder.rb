@@ -281,6 +281,26 @@ class DecoderTest < Minitest::Test
     )
   end
 
+  def test_container_depth_is_restored_between_siblings
+    count = 600
+    array_header = [0x1e, 4, count - 285].pack('CCn')
+    containers = {
+      'arrays' => "\x00\x04".b,
+      'maps' => "\xe0".b,
+    }
+
+    containers.each do |name, empty_container|
+      io = MaxMind::DB::MemoryReader.new(
+        array_header + (empty_container * count),
+        is_buffer: true
+      )
+      decoded, = MaxMind::DB::Decoder.new(io, 0).decode(0)
+
+      assert_equal(count, decoded.length, name)
+      assert_empty(decoded.reject(&:empty?), name)
+    end
+  end
+
   def test_oversized_payload_is_rejected_before_read
     # Each header declares a two-byte payload, but the reader contains only the
     # header and raises if the decoder tries to copy the missing payload.
