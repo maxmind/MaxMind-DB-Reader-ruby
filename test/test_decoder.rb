@@ -258,18 +258,22 @@ class DecoderTest < Minitest::Test
     end
   end
 
-  def test_default_depth_limit_boundary
-    # Each array adds one level. Exactly 512 levels must decode, while 513 must
-    # be rejected.
-    io = MaxMind::DB::MemoryReader.new(("\x01\x04".b * 512) + "\xa0".b, is_buffer: true)
-    decoded, = MaxMind::DB::Decoder.new(io, 0).decode(0)
-    512.times { decoded = decoded.fetch(0) }
+  def test_depth_limit_boundary
+    # A shallow explicit limit tests the boundary without depending on the
+    # native stack available to a particular Ruby implementation.
+    limit = 32
+    io = MaxMind::DB::MemoryReader.new(("\x01\x04".b * limit) + "\xa0".b, is_buffer: true)
+    decoded, = MaxMind::DB::Decoder.new(io, 0, max_depth: limit).decode(0)
+    limit.times { decoded = decoded.fetch(0) }
 
     assert_equal(0, decoded)
 
-    io = MaxMind::DB::MemoryReader.new(("\x01\x04".b * 513) + "\xa0".b, is_buffer: true)
+    io = MaxMind::DB::MemoryReader.new(
+      ("\x01\x04".b * (limit + 1)) + "\xa0".b,
+      is_buffer: true
+    )
     error = assert_raises(MaxMind::DB::InvalidDatabaseError) do
-      MaxMind::DB::Decoder.new(io, 0).decode(0)
+      MaxMind::DB::Decoder.new(io, 0, max_depth: limit).decode(0)
     end
     assert_equal(
       'The MaxMind DB file\'s data section exceeds the maximum depth',
