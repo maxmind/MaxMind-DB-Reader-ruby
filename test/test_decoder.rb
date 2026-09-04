@@ -224,6 +224,24 @@ class DecoderTest < Minitest::Test
     end
   end
 
+  def test_oversized_integer_is_rejected_before_read
+    headers = {
+      'uint16' => "\xa3".b,
+      'uint32' => "\xc5".b,
+      'int32' => "\x05\x01".b,
+      'uint64' => "\x09\x02".b,
+      'uint128' => "\x11\x03".b,
+    }
+
+    headers.each do |name, header|
+      io = HeaderOnlyReader.new(header)
+
+      assert_raises(MaxMind::DB::InvalidDatabaseError, name) do
+        MaxMind::DB::Decoder.new(io, 0).decode(0)
+      end
+    end
+  end
+
   def test_unknown_type_raises
     # An extended type byte selects type 7 + its value. 0x10 gives type 23,
     # which the format does not define; the deprecated end marker is type 13.

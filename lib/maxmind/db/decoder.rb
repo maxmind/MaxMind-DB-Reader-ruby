@@ -148,6 +148,10 @@ module MaxMind
       def verify_size(expected, actual)
         return if expected == actual
 
+        raise_invalid_size
+      end
+
+      def raise_invalid_size
         raise InvalidDatabaseError,
               'The MaxMind DB file\'s data section contains bad data (unknown data type or corrupt data)'
       end
@@ -169,6 +173,7 @@ module MaxMind
       end
 
       def decode_int(type_code, type_size, size, offset, budget)
+        raise_invalid_size if size > type_size
         return 0, offset if size == 0
 
         raise_bytes_exceeded if (budget[BUDGET_BYTES] -= size) < 0
@@ -178,6 +183,7 @@ module MaxMind
       end
 
       def decode_uint128(size, offset, budget)
+        raise_invalid_size if size > 16
         return 0, offset if size == 0
 
         raise_bytes_exceeded if (budget[BUDGET_BYTES] -= size) < 0
