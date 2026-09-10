@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
   s.files       = IO.popen(%w[git ls-files -z], chdir: __dir__, err: IO::NULL, &:read).split("\x0").difference(excluded)
   s.name        = 'maxmind-db'
   s.summary     = 'A gem for reading MaxMind DB files.'
-  s.version     = '1.4.0'
+  s.version     = '1.5.0'
 
   s.description = 'A gem for reading MaxMind DB files. MaxMind DB is a binary file format that stores data indexed by IP address subnets (IPv4 or IPv6).'
   s.email       = 'support@maxmind.com'
