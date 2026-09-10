@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.5.0
+## 1.5.0 (2026-09-10)
 
 * Fixed two denial-of-service issues in the decoder. A crafted database could
   nest data-section pointers to shared targets so that decoding one record
