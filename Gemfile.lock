@@ -8,8 +8,8 @@ GEM
   specs:
     ast (2.4.3)
     drb (2.2.3)
-    json (2.21.2)
-    json (2.21.2-java)
+    json (3.0.2)
+    json (3.0.2-java)
     language_server-protocol (3.17.0.6)
     lint_roller (1.1.0)
     minitest (6.0.6)
@@ -50,14 +50,14 @@ GEM
     rubocop-rake (0.7.1)
       lint_roller (~> 1.1)
       rubocop (>= 1.72.1)
-    rubocop-thread_safety (0.7.3)
+    rubocop-thread_safety (0.8.0)
       lint_roller (~> 1.1)
-      rubocop (~> 1.72, >= 1.72.1)
+      rubocop (~> 1.89)
       rubocop-ast (>= 1.44.0, < 2.0)
     ruby-progressbar (1.13.0)
-    unicode-display_width (3.2.0)
-      unicode-emoji (~> 4.1)
-    unicode-emoji (4.2.0)
+    unicode-display_width (3.3.0)
+      unicode-emoji (~> 4.3)
+    unicode-emoji (4.3.0)
 
 PLATFORMS
   java
