@@ -203,7 +203,7 @@ module MaxMind
     private_constant :IP_VERSION_TO_BIT_COUNT
 
     def find_address_in_tree(ip_address, ip_version)
-      packed = ip_address.hton
+      ip = ip_address.to_i
 
       bit_count = IP_VERSION_TO_BIT_COUNT[ip_version]
       node = start_node(bit_count)
@@ -211,12 +211,8 @@ module MaxMind
       node_count = @node_count
 
       depth = 0
-      loop do
-        break if depth >= bit_count || node >= node_count
-
-        c = packed[depth >> 3].ord
-        bit = 1 & (c >> (7 - (depth % 8)))
-        node = read_node(node, bit)
+      while depth < bit_count && node < node_count
+        node = read_node(node, ip[bit_count - 1 - depth])
         depth += 1
       end
 
