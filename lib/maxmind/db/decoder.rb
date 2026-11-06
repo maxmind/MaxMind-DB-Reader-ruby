@@ -204,33 +204,6 @@ module MaxMind
         container
       end
 
-      def decode_pointer(size, offset)
-        pointer_size = size >> 3
-
-        # Build the pointer with integer arithmetic to avoid temporary strings
-        # when combining control bits with the payload bytes.
-        case pointer_size
-        when 0
-          new_offset = offset + 1
-          pointer = ((size & 0x7) << 8) | @io.getbyte(offset)
-        when 1
-          new_offset = offset + 2
-          pointer = ((size & 0x7) << 16) | @io.read(offset, 2).unpack1('n')
-          pointer += 2048
-        when 2
-          new_offset = offset + 3
-          buf = @io.read(offset, 3)
-          pointer = ((size & 0x7) << 24) | (buf.getbyte(0) << 16) |
-                    (buf.getbyte(1) << 8) | buf.getbyte(2)
-          pointer += 526_336
-        else
-          new_offset = offset + 4
-          pointer = @io.read(offset, 4).unpack1('N')
-        end
-        pointer += @pointer_base
-        [pointer, new_offset]
-      end
-
       def decode_utf8_string(size, offset)
         raise_bytes_exceeded if (@bytes_left -= size) < 0
         @offset = offset + size
@@ -280,100 +253,112 @@ module MaxMind
       private
 
       # Decode the value at @offset and move @offset past it.
+      def decode_value
+        offset = @offset
+        ctrl_byte = @io.getbyte(offset)
+        type_num = ctrl_byte >> 5
+        return decode_pointer(ctrl_byte, offset + 1) if type_num == 1
+
+        decode_data(ctrl_byte, type_num, offset + 1)
+      end
+
+      def decode_pointer(ctrl_byte, offset)
+        size = ctrl_byte & 0x1f
+        pointer_size = size >> 3
+
+        # Build the pointer with integer arithmetic to avoid temporary strings
+        # when combining control bits with the payload bytes.
+        case pointer_size
+        when 0
+          return_offset = offset + 1
+          pointer = ((size & 0x7) << 8) | @io.getbyte(offset)
+        when 1
+          return_offset = offset + 2
+          pointer = ((size & 0x7) << 16) | @io.read(offset, 2).unpack1('n')
+          pointer += 2048
+        when 2
+          return_offset = offset + 3
+          buf = @io.read(offset, 3)
+          pointer = ((size & 0x7) << 24) | (buf.getbyte(0) << 16) |
+                    (buf.getbyte(1) << 8) | buf.getbyte(2)
+          pointer += 526_336
+        else
+          return_offset = offset + 4
+          pointer = @io.read(offset, 4).unpack1('N')
+        end
+        pointer += @pointer_base
+
+        if @pointer_test
+          @offset = return_offset
+          return pointer
+        end
+
+        # The root or containing collection already charged the logical value
+        # at the pointer's position. Following it adds depth but no separate
+        # value. Its target cannot be another pointer, and decoding the target
+        # still reserves container children and charges payload bytes.
+        raise_depth_exceeded if (@depth += 1) > @max_depth
+        ctrl_byte = @io.getbyte(pointer)
+        type_num = ctrl_byte >> 5
+        if type_num == 1
+          raise InvalidDatabaseError,
+                'The MaxMind DB file\'s data section contains bad data (pointer points to another pointer)'
+        end
+
+        value = decode_data(ctrl_byte, type_num, pointer + 1)
+        @depth -= 1
+        @offset = return_offset
+        value
+      end
+
+      # Decode a value that is not a pointer. +offset+ is the byte after the
+      # control byte.
       #
       # The dispatch below is one branch per data type, so the method's
       # cyclomatic complexity is above the cop's default. It is inlined here
       # for speed and the branches are uniform.
       # rubocop:disable-next Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
-      def decode_value
-        offset = @offset
-        pointer_return_offset = nil
-        new_offset = offset + 1
-        ctrl_byte = @io.getbyte(offset)
-        type_num = ctrl_byte >> 5
-        type_num, new_offset = read_extended(new_offset) if type_num == 0
+      def decode_data(ctrl_byte, type_num, offset)
+        if type_num == 0
+          type_num = @io.getbyte(offset) + 7
+          offset += 1
+        end
 
-        size, new_offset = size_from_ctrl_byte(ctrl_byte, new_offset, type_num)
-        if type_num == 1
-          pointer, pointer_return_offset = decode_pointer(size, new_offset)
-          if @pointer_test
-            @offset = pointer_return_offset
-            return pointer
+        size = ctrl_byte & 0x1f
+        if size >= 29
+          if size == 29
+            size = 29 + @io.getbyte(offset)
+            offset += 1
+          elsif size == 30
+            size = 285 + @io.read(offset, 2).unpack1('n')
+            offset += 2
+          else
+            size = 65_821 + ("\x00".b << @io.read(offset, 3)).unpack1('N')
+            offset += 3
           end
-
-          # The root or containing collection already charged the logical value
-          # at the pointer's position. Following it adds depth but no separate
-          # value. Its target cannot be another pointer, and decoding the target
-          # still reserves container children and charges payload bytes.
-          raise_depth_exceeded if (@depth += 1) > @max_depth
-          new_offset = pointer + 1
-          ctrl_byte = @io.getbyte(pointer)
-          type_num = ctrl_byte >> 5
-          if type_num == 1
-            raise InvalidDatabaseError,
-                  'The MaxMind DB file\'s data section contains bad data (pointer points to another pointer)'
-          end
-          type_num, new_offset = read_extended(new_offset) if type_num == 0
-          size, new_offset = size_from_ctrl_byte(ctrl_byte, new_offset, type_num)
         end
 
         # Direct case dispatch avoids looking the method up in a Hash and
         # calling it with send.
-        value = case type_num
-                when 2 then decode_utf8_string(size, new_offset)
-                when 3 then decode_double(size, new_offset)
-                when 4 then decode_bytes(size, new_offset)
-                when 5 then decode_uint16(size, new_offset)
-                when 6 then decode_uint32(size, new_offset)
-                when 7 then decode_map(size, new_offset)
-                when 8 then decode_int32(size, new_offset)
-                when 9 then decode_uint64(size, new_offset)
-                when 10 then decode_uint128(size, new_offset)
-                when 11 then decode_array(size, new_offset)
-                when 14
-                  @offset = new_offset
-                  size != 0
-                when 15 then decode_float(size, new_offset)
-                else
-                  raise InvalidDatabaseError,
-                        "The MaxMind DB file's data section contains bad data (unknown data type #{type_num})"
-                end
-        return value unless pointer_return_offset
-
-        @depth -= 1
-        @offset = pointer_return_offset
-        value
-      end
-
-      def read_extended(offset)
-        next_byte = @io.getbyte(offset)
-        type_num = next_byte + 7
-        if type_num < 7
+        case type_num
+        when 2 then decode_utf8_string(size, offset)
+        when 3 then decode_double(size, offset)
+        when 4 then decode_bytes(size, offset)
+        when 5 then decode_uint16(size, offset)
+        when 6 then decode_uint32(size, offset)
+        when 7 then decode_map(size, offset)
+        when 8 then decode_int32(size, offset)
+        when 9 then decode_uint64(size, offset)
+        when 10 then decode_uint128(size, offset)
+        when 11 then decode_array(size, offset)
+        when 14
+          @offset = offset
+          size != 0
+        when 15 then decode_float(size, offset)
+        else
           raise InvalidDatabaseError,
-                "Something went horribly wrong in the decoder. An extended type resolved to a type number < 8 (#{type_num})"
+                "The MaxMind DB file's data section contains bad data (unknown data type #{type_num})"
         end
-        [type_num, offset + 1]
-      end
-
-      def size_from_ctrl_byte(ctrl_byte, offset, type_num)
-        size = ctrl_byte & 0x1f
-
-        return size, offset if type_num == 1 || size < 29
-
-        if size == 29
-          size = 29 + @io.getbyte(offset)
-          return size, offset + 1
-        end
-
-        if size == 30
-          size_bytes = @io.read(offset, 2)
-          size = 285 + size_bytes.unpack1('n')
-          return size, offset + 2
-        end
-
-        size_bytes = "\x00".b << @io.read(offset, 3)
-        size = 65_821 + size_bytes.unpack1('N')
-        [size, offset + 3]
       end
     end
   end
