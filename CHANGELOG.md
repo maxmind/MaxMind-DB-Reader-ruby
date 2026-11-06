@@ -2,11 +2,7 @@
 
 ## 1.5.1
 
-* Lookups that read from the file, in `MODE_FILE` and the default
-  `MODE_AUTO`, are faster. The reader now reads 4 KiB at a time and keeps the
-  last two blocks for the reads that follow. Before, it made one `pread`
-  system call for each read. GeoLite City lookups are about 2x as fast on
-  CRuby 4.0 and about 11% faster on JRuby 10.1.
+* Lookups are faster, especially in `MODE_FILE` and the default `MODE_AUTO`.
 * A read at or past the end of the database file in `MODE_FILE` or
   `MODE_AUTO` now raises `InvalidDatabaseError`. Before, it raised
   `EOFError`.
