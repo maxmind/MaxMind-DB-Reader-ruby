@@ -109,8 +109,10 @@ module MaxMind
         raise_depth_exceeded if (@depth += 1) > @max_depth
         @offset = offset
         array = []
-        size.times do
+        i = 0
+        while i < size
           array << decode_value
+          i += 1
         end
         @depth -= 1
         array
@@ -196,9 +198,11 @@ module MaxMind
         raise_depth_exceeded if (@depth += 1) > @max_depth
         @offset = offset
         container = {}
-        size.times do
+        i = 0
+        while i < size
           key = decode_value
           container[key] = decode_value
+          i += 1
         end
         @depth -= 1
         container
