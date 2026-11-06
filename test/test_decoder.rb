@@ -26,6 +26,12 @@ class DecoderTest < Minitest::Test
 
       bytes
     end
+
+    def unpack1(offset, size, type_code, type_size = size)
+      buf = read(offset, size)
+      buf = buf.rjust(type_size, "\x00") if buf.bytesize < type_size
+      buf.unpack1(type_code)
+    end
   end
 
   def test_arrays

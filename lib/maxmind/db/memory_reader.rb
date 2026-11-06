@@ -9,12 +9,12 @@ module MaxMind
       def initialize(filename, options = {})
         if options[:is_buffer]
           @buf = filename
-          @size = @buf.length
+          @size = @buf.bytesize
           return
         end
 
         @buf = File.read(filename, mode: 'rb').freeze
-        @size = @buf.length
+        @size = @buf.bytesize
       end
 
       attr_reader :size
@@ -34,9 +34,25 @@ module MaxMind
       def read(offset, size)
         return ''.b if size == 0
 
-        raise_bad_data if offset + size > @buf.length
+        raise_bad_data if offset + size > @buf.bytesize
 
         @buf.byteslice(offset, size)
+      end
+
+      def unpack1(offset, size, type_code, type_size = size)
+        if type_size == size
+          begin
+            value = @buf.unpack1(type_code, offset: offset)
+            return value unless value.nil?
+          rescue ArgumentError
+            raise_bad_data if offset + size > @buf.bytesize
+            raise
+          end
+        end
+
+        buf = read(offset, size)
+        buf = buf.rjust(type_size, "\x00") if buf.bytesize < type_size
+        buf.unpack1(type_code)
       end
 
       private
