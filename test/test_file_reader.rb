@@ -110,5 +110,9 @@ class FileReaderTest < Minitest::Test
   def test_read_requires_the_full_range
     assert_raises(MaxMind::DB::InvalidDatabaseError) { @reader.read(9_998, 3) }
     assert_raises(MaxMind::DB::InvalidDatabaseError) { @reader.read(5_000, 5_001) }
+    assert_raises(MaxMind::DB::InvalidDatabaseError) { @reader.getbyte(10_000) }
+    assert_raises(MaxMind::DB::InvalidDatabaseError) { @reader.read(10_000, 1) }
+    assert_raises(MaxMind::DB::InvalidDatabaseError) { @reader.read(10_001, 1) }
+    assert_raises(MaxMind::DB::InvalidDatabaseError) { @reader.read(10_000, 5_000) }
   end
 end

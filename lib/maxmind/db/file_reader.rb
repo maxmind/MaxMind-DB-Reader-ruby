@@ -79,7 +79,7 @@ module MaxMind
         return ''.b if size == 0
 
         if size > WINDOW_SIZE
-          buf = @fh.pread(size, offset)
+          buf = pread(size, offset)
           raise_bad_data if buf.nil? || buf.bytesize != size
 
           return buf
@@ -125,11 +125,19 @@ module MaxMind
           return previous
         end
 
-        bytes = @fh.pread(WINDOW_SIZE, offset)
+        bytes = pread(WINDOW_SIZE, offset)
         raise_bad_data if bytes.nil? || bytes.bytesize < size
 
         @previous_window = window
         @window = [offset, offset + bytes.bytesize, bytes.freeze].freeze
+      end
+
+      # File#pread raises EOFError for an offset at or past the end of the
+      # file, and the Windows fallback returns nil. Return nil for both.
+      def pread(size, offset)
+        @fh.pread(size, offset)
+      rescue EOFError
+        nil
       end
 
       def raise_bad_data
