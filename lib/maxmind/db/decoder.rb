@@ -135,14 +135,12 @@ module MaxMind
 
       def decode_double(size, offset)
         verify_size(8, size)
-        buf = @io.read(offset, 8)
-        [buf.unpack1('G'), offset + 8]
+        [@io.unpack1(offset, size, 'G'), offset + 8]
       end
 
       def decode_float(size, offset)
         verify_size(4, size)
-        buf = @io.read(offset, 4)
-        [buf.unpack1('g'), offset + 4]
+        [@io.unpack1(offset, size, 'g'), offset + 4]
       end
 
       def verify_size(expected, actual)
@@ -177,9 +175,7 @@ module MaxMind
         return 0, offset if size == 0
 
         raise_bytes_exceeded if (budget[BUDGET_BYTES] -= size) < 0
-        buf = @io.read(offset, size)
-        buf = buf.rjust(type_size, "\x00") if size != type_size
-        [buf.unpack1(type_code), offset + size]
+        [@io.unpack1(offset, size, type_code, type_size), offset + size]
       end
 
       def decode_uint128(size, offset, budget)
@@ -187,13 +183,13 @@ module MaxMind
         return 0, offset if size == 0
 
         raise_bytes_exceeded if (budget[BUDGET_BYTES] -= size) < 0
-        buf = @io.read(offset, size)
 
         if size <= 8
-          buf = buf.rjust(8, "\x00")
-          return buf.unpack1('Q>'), offset + size
+          a = @io.unpack1(offset, size, 'Q>', 8)
+          return [a, offset + size]
         end
 
+        buf = @io.read(offset, size)
         a_bytes = buf[0...-8].rjust(8, "\x00")
         b_bytes = buf[-8...buf.length]
         a = a_bytes.unpack1('Q>')
@@ -227,7 +223,7 @@ module MaxMind
           pointer = ((size & 0x7) << 8) | @io.getbyte(offset)
         when 1
           new_offset = offset + 2
-          pointer = ((size & 0x7) << 16) | @io.read(offset, 2).unpack1('n')
+          pointer = ((size & 0x7) << 16) | @io.unpack1(offset, 2, 'n')
           pointer += 2048
         when 2
           new_offset = offset + 3
@@ -237,7 +233,7 @@ module MaxMind
           pointer += 526_336
         else
           new_offset = offset + 4
-          pointer = @io.read(offset, 4).unpack1('N')
+          pointer = @io.unpack1(offset, 4, 'N')
         end
         pointer += @pointer_base
         [pointer, new_offset]
@@ -359,13 +355,11 @@ module MaxMind
         end
 
         if size == 30
-          size_bytes = @io.read(offset, 2)
-          size = 285 + size_bytes.unpack1('n')
+          size = 285 + @io.unpack1(offset, 2, 'n')
           return size, offset + 2
         end
 
-        size_bytes = "\x00".b << @io.read(offset, 3)
-        size = 65_821 + size_bytes.unpack1('N')
+        size = 65_821 + @io.unpack1(offset, 3, 'N', 4)
         [size, offset + 3]
       end
     end
