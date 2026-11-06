@@ -42,10 +42,7 @@ module MaxMind
 
       # Per-decode limits. The value and depth limits are the ones the MaxMind DB
       # specification recommends. The specification leaves the payload limit to
-      # the reader, and 2 MiB matches libmaxminddb. +budget+ is a three-element
-      # array, [values_remaining, depth, bytes_remaining], shared across the
-      # recursion so every count survives it. It is call-local, which keeps the
-      # decoder safe for concurrent reads.
+      # the reader, and 2 MiB matches libmaxminddb.
       #
       # The value limit stops a pointer fan-out. It follows the specification's
       # flat rule: the root is one value, each array reserves one value per
@@ -73,11 +70,6 @@ module MaxMind
 
       MAX_DEPTH = 512
       private_constant :MAX_DEPTH
-
-      BUDGET_VALUES = 0
-      BUDGET_DEPTH = 1
-      BUDGET_BYTES = 2
-      private_constant :BUDGET_VALUES, :BUDGET_DEPTH, :BUDGET_BYTES
 
       # JRuby can exhaust the stack before the depth limit is reached and raises
       # a Java StackOverflowError, which is not a SystemStackError. Catch both so
@@ -112,37 +104,34 @@ module MaxMind
               'The MaxMind DB file\'s data section exceeds the maximum number of bytes'
       end
 
-      def decode_array(size, offset, budget)
-        raise_values_exceeded if (budget[BUDGET_VALUES] -= size) < 0
-        raise_depth_exceeded if (budget[BUDGET_DEPTH] += 1) > @max_depth
+      def decode_array(size, offset)
+        raise_values_exceeded if (@values_left -= size) < 0
+        raise_depth_exceeded if (@depth += 1) > @max_depth
+        @offset = offset
         array = []
         size.times do
-          value, offset = decode_with_budget(offset, budget)
-          array << value
+          array << decode_value
         end
-        budget[BUDGET_DEPTH] -= 1
-        [array, offset]
+        @depth -= 1
+        array
       end
 
-      def decode_boolean(size, offset)
-        [size != 0, offset]
-      end
-
-      def decode_bytes(size, offset, budget)
-        raise_bytes_exceeded if (budget[BUDGET_BYTES] -= size) < 0
-        [@io.read(offset, size), offset + size]
+      def decode_bytes(size, offset)
+        raise_bytes_exceeded if (@bytes_left -= size) < 0
+        @offset = offset + size
+        @io.read(offset, size)
       end
 
       def decode_double(size, offset)
         verify_size(8, size)
-        buf = @io.read(offset, 8)
-        [buf.unpack1('G'), offset + 8]
+        @offset = offset + 8
+        @io.read(offset, 8).unpack1('G')
       end
 
       def decode_float(size, offset)
         verify_size(4, size)
-        buf = @io.read(offset, 4)
-        [buf.unpack1('g'), offset + 4]
+        @offset = offset + 4
+        @io.read(offset, 4).unpack1('g')
       end
 
       def verify_size(expected, actual)
@@ -156,64 +145,63 @@ module MaxMind
               'The MaxMind DB file\'s data section contains bad data (unknown data type or corrupt data)'
       end
 
-      def decode_int32(size, offset, budget)
-        decode_int('l>', 4, size, offset, budget)
+      def decode_int32(size, offset)
+        decode_int('l>', 4, size, offset)
       end
 
-      def decode_uint16(size, offset, budget)
-        decode_int('n', 2, size, offset, budget)
+      def decode_uint16(size, offset)
+        decode_int('n', 2, size, offset)
       end
 
-      def decode_uint32(size, offset, budget)
-        decode_int('N', 4, size, offset, budget)
+      def decode_uint32(size, offset)
+        decode_int('N', 4, size, offset)
       end
 
-      def decode_uint64(size, offset, budget)
-        decode_int('Q>', 8, size, offset, budget)
+      def decode_uint64(size, offset)
+        decode_int('Q>', 8, size, offset)
       end
 
-      def decode_int(type_code, type_size, size, offset, budget)
+      def decode_int(type_code, type_size, size, offset)
         raise_invalid_size if size > type_size
-        return 0, offset if size == 0
+        @offset = offset + size
+        return 0 if size == 0
 
-        raise_bytes_exceeded if (budget[BUDGET_BYTES] -= size) < 0
+        raise_bytes_exceeded if (@bytes_left -= size) < 0
         buf = @io.read(offset, size)
         buf = buf.rjust(type_size, "\x00") if size != type_size
-        [buf.unpack1(type_code), offset + size]
+        buf.unpack1(type_code)
       end
 
-      def decode_uint128(size, offset, budget)
+      def decode_uint128(size, offset)
         raise_invalid_size if size > 16
-        return 0, offset if size == 0
+        @offset = offset + size
+        return 0 if size == 0
 
-        raise_bytes_exceeded if (budget[BUDGET_BYTES] -= size) < 0
+        raise_bytes_exceeded if (@bytes_left -= size) < 0
         buf = @io.read(offset, size)
 
-        if size <= 8
-          buf = buf.rjust(8, "\x00")
-          return buf.unpack1('Q>'), offset + size
-        end
+        return buf.rjust(8, "\x00").unpack1('Q>') if size <= 8
 
         a_bytes = buf[0...-8].rjust(8, "\x00")
         b_bytes = buf[-8...buf.length]
         a = a_bytes.unpack1('Q>')
         b = b_bytes.unpack1('Q>')
         a <<= 64
-        [a | b, offset + size]
+        a | b
       end
 
-      def decode_map(size, offset, budget)
+      def decode_map(size, offset)
         # A map entry decodes a key and a value, so it costs two values.
-        raise_values_exceeded if (budget[BUDGET_VALUES] -= size * 2) < 0
-        raise_depth_exceeded if (budget[BUDGET_DEPTH] += 1) > @max_depth
+        raise_values_exceeded if (@values_left -= size * 2) < 0
+        raise_depth_exceeded if (@depth += 1) > @max_depth
+        @offset = offset
         container = {}
         size.times do
-          key, offset = decode_with_budget(offset, budget)
-          value, offset = decode_with_budget(offset, budget)
-          container[key] = value
+          key = decode_value
+          container[key] = decode_value
         end
-        budget[BUDGET_DEPTH] -= 1
-        [container, offset]
+        @depth -= 1
+        container
       end
 
       def decode_pointer(size, offset)
@@ -243,14 +231,14 @@ module MaxMind
         [pointer, new_offset]
       end
 
-      def decode_utf8_string(size, offset, budget)
-        raise_bytes_exceeded if (budget[BUDGET_BYTES] -= size) < 0
-        new_offset = offset + size
+      def decode_utf8_string(size, offset)
+        raise_bytes_exceeded if (@bytes_left -= size) < 0
+        @offset = offset + size
         buf = @io.read(offset, size)
         buf.force_encoding(Encoding::UTF_8)
         # We could check it's valid UTF-8 with `valid_encoding?', but for
         # performance I do not.
-        [buf, new_offset]
+        buf
       end
 
       public
@@ -264,27 +252,41 @@ module MaxMind
       #
       # Throws an exception if there is an error.
       def decode(offset)
+        # Each call decodes with its own copy of the decoder. The copy holds the
+        # offset and the remaining budgets, so the helpers return only the
+        # value, and this decoder never changes. That keeps it safe for
+        # concurrent reads.
+        dup.decode_root(offset)
+      end
+
+      protected
+
+      def decode_root(offset)
         # Bound the work per decode so a crafted database cannot exhaust CPU or
-        # memory. +budget+ carries the remaining value count, the current depth,
-        # and the remaining payload-byte allowance, and is call-local, which
-        # keeps the decoder safe for concurrent reads. The root value is charged
-        # here; containers charge their children. The depth limit catches a
-        # pointer cycle on MRI. JRuby can exhaust the stack before the limit is
-        # reached and raises a Java StackOverflowError, so catch that too and
-        # report the same error.
-        decode_with_budget(offset, [@max_values - 1, 0, @max_payload_bytes])
+        # memory. The root value is charged here. Containers charge their
+        # children. The depth limit catches a pointer cycle on MRI. JRuby can
+        # exhaust the stack before the limit is reached and raises a Java
+        # StackOverflowError, so catch that too and report the same error.
+        @offset = offset
+        @values_left = @max_values - 1
+        @depth = 0
+        @bytes_left = @max_payload_bytes
+        value = decode_value
+        [value, @offset]
       rescue *STACK_ERRORS
-        raise InvalidDatabaseError,
-              'The MaxMind DB file\'s data section exceeds the maximum depth'
+        raise_depth_exceeded
       end
 
       private
 
+      # Decode the value at @offset and move @offset past it.
+      #
       # The dispatch below is one branch per data type, so the method's
       # cyclomatic complexity is above the cop's default. It is inlined here
       # for speed and the branches are uniform.
       # rubocop:disable-next Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
-      def decode_with_budget(offset, budget)
+      def decode_value
+        offset = @offset
         pointer_return_offset = nil
         new_offset = offset + 1
         ctrl_byte = @io.getbyte(offset)
@@ -294,13 +296,16 @@ module MaxMind
         size, new_offset = size_from_ctrl_byte(ctrl_byte, new_offset, type_num)
         if type_num == 1
           pointer, pointer_return_offset = decode_pointer(size, new_offset)
-          return [pointer, pointer_return_offset] if @pointer_test
+          if @pointer_test
+            @offset = pointer_return_offset
+            return pointer
+          end
 
           # The root or containing collection already charged the logical value
           # at the pointer's position. Following it adds depth but no separate
           # value. Its target cannot be another pointer, and decoding the target
           # still reserves container children and charges payload bytes.
-          raise_depth_exceeded if (budget[BUDGET_DEPTH] += 1) > @max_depth
+          raise_depth_exceeded if (@depth += 1) > @max_depth
           new_offset = pointer + 1
           ctrl_byte = @io.getbyte(pointer)
           type_num = ctrl_byte >> 5
@@ -314,28 +319,30 @@ module MaxMind
 
         # Direct case dispatch avoids looking the method up in a Hash and
         # calling it with send.
-        result = case type_num
-                 when 2 then decode_utf8_string(size, new_offset, budget)
-                 when 3 then decode_double(size, new_offset)
-                 when 4 then decode_bytes(size, new_offset, budget)
-                 when 5 then decode_uint16(size, new_offset, budget)
-                 when 6 then decode_uint32(size, new_offset, budget)
-                 when 7 then decode_map(size, new_offset, budget)
-                 when 8 then decode_int32(size, new_offset, budget)
-                 when 9 then decode_uint64(size, new_offset, budget)
-                 when 10 then decode_uint128(size, new_offset, budget)
-                 when 11 then decode_array(size, new_offset, budget)
-                 when 14 then decode_boolean(size, new_offset)
-                 when 15 then decode_float(size, new_offset)
-                 else
-                   raise InvalidDatabaseError,
-                         "The MaxMind DB file's data section contains bad data (unknown data type #{type_num})"
-                 end
-        return result unless pointer_return_offset
+        value = case type_num
+                when 2 then decode_utf8_string(size, new_offset)
+                when 3 then decode_double(size, new_offset)
+                when 4 then decode_bytes(size, new_offset)
+                when 5 then decode_uint16(size, new_offset)
+                when 6 then decode_uint32(size, new_offset)
+                when 7 then decode_map(size, new_offset)
+                when 8 then decode_int32(size, new_offset)
+                when 9 then decode_uint64(size, new_offset)
+                when 10 then decode_uint128(size, new_offset)
+                when 11 then decode_array(size, new_offset)
+                when 14
+                  @offset = new_offset
+                  size != 0
+                when 15 then decode_float(size, new_offset)
+                else
+                  raise InvalidDatabaseError,
+                        "The MaxMind DB file's data section contains bad data (unknown data type #{type_num})"
+                end
+        return value unless pointer_return_offset
 
-        budget[BUDGET_DEPTH] -= 1
-        result[1] = pointer_return_offset
-        result
+        @depth -= 1
+        @offset = pointer_return_offset
+        value
       end
 
       def read_extended(offset)
