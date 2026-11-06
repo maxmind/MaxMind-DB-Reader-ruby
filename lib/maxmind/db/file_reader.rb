@@ -66,7 +66,10 @@ module MaxMind
 
       # Return the byte at +offset+ as an Integer.
       def getbyte(offset)
-        window = window_covering(offset, 1)
+        # Most reads hit the current window, so check it here before the
+        # method calls of the full search. JRuby must take the lock to read it.
+        window = @window
+        window = window_covering(offset, 1) if JRUBY || !window || offset < window[0] || offset >= window[1]
         window[2].getbyte(offset - window[0])
       end
 
@@ -75,6 +78,7 @@ module MaxMind
       # The decoder reads a record in many small, mostly adjacent reads. A pread
       # for each one costs a system call, so a read that misses reads
       # WINDOW_SIZE bytes and keeps them for the reads that follow.
+      # rubocop:disable-next Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
       def read(offset, size)
         return ''.b if size == 0
 
@@ -85,7 +89,8 @@ module MaxMind
           return buf
         end
 
-        window = window_covering(offset, size)
+        window = @window
+        window = window_covering(offset, size) if JRUBY || !window || offset < window[0] || offset + size > window[1]
         buf = window[2].byteslice(offset - window[0], size)
 
         # The caller can keep the String, so it must not share the window's
