@@ -42,11 +42,19 @@ module MaxMind
       def unpack1(offset, size, type_code, type_size = size)
         raise_bad_data if offset + size > @buf.bytesize
 
+        if type_code == 'N'
+          case size
+          when 4
+            a, b, c, d = @buf.getbyte(offset), @buf.getbyte(offset + 1), @buf.getbyte(offset + 2), @buf.getbyte(offset + 3)
+            return ((a << 24) + (b << 16) + (c << 8) + d)
+          end
+        end
+
         if type_size == size
           return @buf.unpack1(type_code, offset: offset)
         elsif size == 3 && type_code == 'N'
           # Fast path for 24bit integer. Avoid read+rjust
-          a, b, c = getbyte(offset), getbyte(offset + 1), getbyte(offset + 2)
+          a, b, c = @buf.getbyte(offset), @buf.getbyte(offset + 1), @buf.getbyte(offset + 2)
 
           return (a << 16) + (b << 8) + c
         end
