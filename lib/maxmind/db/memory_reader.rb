@@ -40,14 +40,15 @@ module MaxMind
       end
 
       def unpack1(offset, size, type_code, type_size = size)
+        raise_bad_data if offset + size > @buf.bytesize
+
         if type_size == size
-          begin
-            value = @buf.unpack1(type_code, offset: offset)
-            return value unless value.nil?
-          rescue ArgumentError
-            raise_bad_data if offset + size > @buf.bytesize
-            raise
-          end
+          return @buf.unpack1(type_code, offset: offset)
+        elsif size == 3 && type_code == 'N'
+          # Fast path for 24bit integer. Avoid read+rjust
+          a, b, c = getbyte(offset), getbyte(offset + 1), getbyte(offset + 2)
+
+          return (a << 16) + (b << 8) + c
         end
 
         buf = read(offset, size)

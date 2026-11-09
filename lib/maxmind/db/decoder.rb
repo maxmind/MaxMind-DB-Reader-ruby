@@ -172,10 +172,16 @@ module MaxMind
 
       def decode_int(type_code, type_size, size, offset, budget)
         raise_invalid_size if size > type_size
-        return 0, offset if size == 0
-
         raise_bytes_exceeded if (budget[BUDGET_BYTES] -= size) < 0
-        [@io.unpack1(offset, size, type_code, type_size), offset + size]
+
+        case size
+        when 0
+          return 0, offset
+        when 1
+          return [@io.getbyte(offset), offset + 1]
+        else
+          [@io.unpack1(offset, size, type_code, type_size), offset + size]
+        end
       end
 
       def decode_uint128(size, offset, budget)
