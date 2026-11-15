@@ -203,7 +203,7 @@ module MaxMind
     private_constant :IP_VERSION_TO_BIT_COUNT
 
     def find_address_in_tree(ip_address, ip_version)
-      packed = ip_address.hton
+      ip = ip_address.to_i
 
       bit_count = IP_VERSION_TO_BIT_COUNT[ip_version]
       node = start_node(bit_count)
@@ -211,12 +211,8 @@ module MaxMind
       node_count = @node_count
 
       depth = 0
-      loop do
-        break if depth >= bit_count || node >= node_count
-
-        c = packed[depth >> 3].ord
-        bit = 1 & (c >> (7 - (depth % 8)))
-        node = read_node(node, bit)
+      while depth < bit_count && node < node_count
+        node = read_node(node, ip[bit_count - 1 - depth])
         depth += 1
       end
 
@@ -307,21 +303,17 @@ module MaxMind
 
     def find_metadata_start
       metadata_max_size = [@size, METADATA_MAX_SIZE].min
+      tail_start = @size - metadata_max_size
 
-      stop_index = @size - metadata_max_size
-      index = @size - METADATA_START_MARKER_LENGTH
-      while index >= stop_index
-        return index + METADATA_START_MARKER_LENGTH if at_metadata?(index)
-
-        index -= 1
+      # Read the tail once and search it from the end, so the last marker wins.
+      # One read is much faster than a read at each offset.
+      index = @io.read(tail_start, metadata_max_size).rindex(METADATA_START_MARKER)
+      unless index
+        raise InvalidDatabaseError,
+              'Metadata section not found. Is this a valid MaxMind DB file?'
       end
 
-      raise InvalidDatabaseError,
-            'Metadata section not found. Is this a valid MaxMind DB file?'
-    end
-
-    def at_metadata?(index)
-      @io.read(index, METADATA_START_MARKER_LENGTH) == METADATA_START_MARKER
+      tail_start + index + METADATA_START_MARKER_LENGTH
     end
 
     public

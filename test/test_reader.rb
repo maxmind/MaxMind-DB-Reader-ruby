@@ -396,6 +396,18 @@ class ReaderTest < Minitest::Test
     )
   end
 
+  def test_short_nondatabase
+    ['', "\xAB\xCD".b, "\xAB\xCD\xEFMaxMind.co".b].each do |buf|
+      e = assert_raises(MaxMind::DB::InvalidDatabaseError, buf.inspect) do
+        MaxMind::DB.new(buf, mode: MaxMind::DB::MODE_PARAM_IS_BUFFER)
+      end
+      assert_equal(
+        'Metadata section not found. Is this a valid MaxMind DB file?',
+        e.message,
+      )
+    end
+  end
+
   def test_too_many_constructor_args
     e = assert_raises ArgumentError do
       MaxMind::DB.new('README.md', {}, 'blah')
