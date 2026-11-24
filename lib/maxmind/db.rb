@@ -249,27 +249,22 @@ module MaxMind
 
       if @record_size == 24
         offset = index == 0 ? base_offset : base_offset + 3
-        buf = @io.read(offset, 3)
-        node_bytes = "\x00".b << buf
-        return node_bytes.unpack1('N')
+        return @io.unpack1(offset, 3, 'N', 4)
       end
 
       if @record_size == 28
         if index == 0
-          buf = @io.read(base_offset, 4)
-          n = buf.unpack1('N')
+          n = @io.unpack1(base_offset, 4, 'N')
           last24 = n >> 8
           first4 = (n & 0xf0) << 20
           return first4 | last24
         end
-        buf = @io.read(base_offset + 3, 4)
-        return buf.unpack1('N') & 0x0fffffff
+        return @io.unpack1(base_offset + 3, 4, 'N') & 0x0fffffff
       end
 
       if @record_size == 32
         offset = index == 0 ? base_offset : base_offset + 4
-        node_bytes = @io.read(offset, 4)
-        return node_bytes.unpack1('N')
+        return @io.unpack1(offset, 4, 'N')
       end
 
       raise InvalidDatabaseError, "Unsupported record size: #{@record_size}"

@@ -9,12 +9,12 @@ module MaxMind
       def initialize(filename, options = {})
         if options[:is_buffer]
           @buf = filename
-          @size = @buf.length
+          @size = @buf.bytesize
           return
         end
 
         @buf = File.read(filename, mode: 'rb').freeze
-        @size = @buf.length
+        @size = @buf.bytesize
       end
 
       attr_reader :size
@@ -34,9 +34,34 @@ module MaxMind
       def read(offset, size)
         return ''.b if size == 0
 
-        raise_bad_data if offset + size > @buf.length
+        raise_bad_data if offset + size > @buf.bytesize
 
         @buf.byteslice(offset, size)
+      end
+
+      def unpack1(offset, size, type_code, type_size = size)
+        raise_bad_data if offset + size > @buf.bytesize
+
+        if type_code == 'N'
+          case size
+          when 4
+            a, b, c, d = @buf.getbyte(offset), @buf.getbyte(offset + 1), @buf.getbyte(offset + 2), @buf.getbyte(offset + 3)
+            return ((a << 24) + (b << 16) + (c << 8) + d)
+          end
+        end
+
+        if type_size == size
+          return @buf.unpack1(type_code, offset: offset)
+        elsif size == 3 && type_code == 'N'
+          # Fast path for 24bit integer. Avoid read+rjust
+          a, b, c = @buf.getbyte(offset), @buf.getbyte(offset + 1), @buf.getbyte(offset + 2)
+
+          return (a << 16) + (b << 8) + c
+        end
+
+        buf = read(offset, size)
+        buf = buf.rjust(type_size, "\x00") if buf.bytesize < type_size
+        buf.unpack1(type_code)
       end
 
       private
