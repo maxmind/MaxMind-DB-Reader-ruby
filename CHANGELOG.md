@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.5.1
+
+* Lookups are faster, especially in `MODE_FILE` and the default `MODE_AUTO`.
+* A read at or past the end of the database file in `MODE_FILE` or
+  `MODE_AUTO` now raises `InvalidDatabaseError`. Before, it raised
+  `EOFError`.
+
 ## 1.5.0 (2026-09-10)
 
 * Fixed two denial-of-service issues in the decoder. A crafted database could
